@@ -21,7 +21,7 @@ class LaniakeaGame(Game):
     def getInitBoard(self):
         # return initial board (numpy board)
         b = Board(self.n)
-        return np.array(b.pieces)
+        return np.array(b.board)
 
     def getBoardSize(self):
         # (a,b) tuple

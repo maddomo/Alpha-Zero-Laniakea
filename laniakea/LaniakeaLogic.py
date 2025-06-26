@@ -15,28 +15,39 @@ Based on the board for the game of Othello by Eric P. Nichols.
 
 '''
 import random
+import numpy as np
+
 # from bkcharts.attributes import color
 class Board():
 
     # list of all 8 directions on the board, as (x,y) offsets
     __directions = [(1,1),(1,0),(1,-1),(0,-1),(-1,-1),(-1,0),(-1,1),(0,1)]
 
-    def __init__(self, n=6):
+    def __init__(self):
         "Set up initial board configuration."
-        self.plates = [5, 12, 5]    # available Plates: 
-        self.twoTurtle = 5
-        self.oneTurtle = 12
-        self.noTurtle = 5      # 11 in total, 6 removed, because they are placed before other plates
+        self.plates = [5, 12, 5]    # two, one, none
         rows = 6
-        cols = 4
-        board = [[[None, None] for _ in range(cols)] for _ in range(rows)]
+        cols = 8
+        board = [[None for _ in range(cols)] for _ in range(rows + 1)]
         for i in range(rows):
-            board[i][random.randint(0, 3)] = [0,0]
+            position = random.randint(0, 3) * 2
+
+            board[i][position] = 0
+            board[i][position + 1] = 0
         for i in range(rows):
-            for j in range(cols):
-                if (board[i][j] != [None, None]): continue
-                board[i][j]
-                
+            for j in range(4):
+                if (board[i][j * 2] != None): continue
+                random_plate = self.get_random_plate()
+                board[i][j * 2] = random_plate[0]
+                board[i][j * 2 + 1] = random_plate[1]
+        
+        board[rows][0] = 8 #White pieces in white's space
+        board[rows][1] = 8 #Black pieces in black's space
+
+        board[rows][2] = 0 #White pieces in black's space
+        board[rows][3] = 0 #Black pieces in white's space
+        self.board = np.array(board)
+
             
     def get_random_plate(self):
         randomIndex = random.randint(0,2)
@@ -55,7 +66,7 @@ class Board():
 
     # add [][] indexer syntax to the Board
     def __getitem__(self, index): 
-        return self.pieces[index]
+        return self.board[index]
 
     def get_legal_moves(self, color):
         """Returns all the legal moves for the given color.
@@ -64,6 +75,12 @@ class Board():
         """
         moves = set()  # stores the legal moves.
 
+        piecesAtHome = self[6][0 if color == 1 else 1]
+        
+        
+        
+
+
         # Get all the empty squares (color==0)
         for y in range(self.n):
             for x in range(self.n):
@@ -71,6 +88,8 @@ class Board():
                     newmove = (x,y)
                     moves.add(newmove)
         return list(moves)
+    
+    
 
     def has_legal_moves(self):
         for y in range(self.n):
@@ -80,41 +99,15 @@ class Board():
         return False
     
     def is_win(self, color):
-        """Check whether the given player has collected a triplet in any direction; 
+        """Check whether the given player has won; Player has won by either bringing all his pieces
+        into the endzone of the opponent or if the opponent doesn't have any moves left
         @param color (1=white,-1=black)
         """
-        win = self.n
-        # check y-strips
-        for y in range(self.n):
-            count = 0
-            for x in range(self.n):
-                if self[x][y]==color:
-                    count += 1
-            if count==win:
-                return True
-        # check x-strips
-        for x in range(self.n):
-            count = 0
-            for y in range(self.n):
-                if self[x][y]==color:
-                    count += 1
-            if count==win:
-                return True
-        # check two diagonal strips
-        count = 0
-        for d in range(self.n):
-            if self[d][d]==color:
-                count += 1
-        if count==win:
-            return True
-        count = 0
-        for d in range(self.n):
-            if self[d][self.n-d-1]==color:
-                count += 1
-        if count==win:
-            return True
-        
-        return False
+        is_in_endzone = self[6][2 + (0 if color == 1 else 1)] == 8
+
+        opp_has_moves_left = len(self.get_legal_moves(1 if color == -1 else 1)) != 0
+
+        return is_in_endzone or (not opp_has_moves_left)
 
     def execute_move(self, move, color):
         """Perform the given move on the board; 
@@ -127,3 +120,4 @@ class Board():
         assert self[x][y] == 0
         self[x][y] = color
 
+test = Board()
