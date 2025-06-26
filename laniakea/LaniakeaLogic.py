@@ -18,6 +18,13 @@ import random
 import numpy as np
 
 # from bkcharts.attributes import color
+
+# Board fields explained:
+#   0000 0000 0000 0000 0000 0000 0000 0000 -> empty
+#   1000 0000 0000 0000 0000 0000 0000 0001 -> turtle
+#   ... 0000 0000 0011                      -> one black piece
+#   ... 0000 0001 0001                      -> two white pieces stacked 
+#   ... 0011 0001 0011                      -> black, white, black stack
 class Board():
 
     # list of all 8 directions on the board, as (x,y) offsets
@@ -117,7 +124,20 @@ class Board():
         (x,y) = move
 
         # Add the piece to the empty square.
-        assert self[x][y] == 0
+        assert self[x][y] != -1 and not self.isfullstack(x, y)
         self[x][y] = color
 
+    def is_fullstack(self, x, y):
+        return (self.board[x][y] & 1 << 8) != 0
+    
+    def get_stack_height(self, x, y):
+        if (self.is_fullstack(x, y)):
+            return 3
+        elif ((self.board[x][y] & 1 << 4) != 0):
+            return 2
+        elif ((self.board[x][y] & 1) != 0):
+            return 1
+        else: 
+            return 0
+        
 test = Board()
