@@ -14,20 +14,44 @@ Date: Jan 5, 2018.
 Based on the board for the game of Othello by Eric P. Nichols.
 
 '''
+import random
 # from bkcharts.attributes import color
 class Board():
 
     # list of all 8 directions on the board, as (x,y) offsets
     __directions = [(1,1),(1,0),(1,-1),(0,-1),(-1,-1),(-1,0),(-1,1),(0,1)]
 
-    def __init__(self, n=3):
+    def __init__(self, n=6):
         "Set up initial board configuration."
+        self.plates = [5, 12, 5]    # available Plates: 
+        self.twoTurtle = 5
+        self.oneTurtle = 12
+        self.noTurtle = 5      # 11 in total, 6 removed, because they are placed before other plates
+        rows = 6
+        cols = 4
+        board = [[[None, None] for _ in range(cols)] for _ in range(rows)]
+        for i in range(rows):
+            board[i][random.randint(0, 3)] = [0,0]
+        for i in range(rows):
+            for j in range(cols):
+                if (board[i][j] != [None, None]): continue
+                board[i][j]
+                
+            
+    def get_random_plate(self):
+        randomIndex = random.randint(0,2)
 
-        self.n = n
-        # Create the empty board array.
-        self.pieces = [None]*self.n
-        for i in range(self.n):
-            self.pieces[i] = [0]*self.n
+        while(self.plates[randomIndex] == 0):
+            randomIndex = random.randint(0,2)
+        self.plates[randomIndex] = self.plates[randomIndex] - 1
+
+        if randomIndex == 0:
+            return [-1, -1]
+        elif randomIndex == 1:
+            return random.choice([[-1, 0], [0, -1]])
+        elif randomIndex == 2:
+            return [0, 0]
+
 
     # add [][] indexer syntax to the Board
     def __getitem__(self, index): 
