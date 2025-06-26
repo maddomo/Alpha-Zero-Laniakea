@@ -16,8 +16,11 @@ Based on the board for the game of Othello by Eric P. Nichols.
 '''
 import random
 import numpy as np
-
+import LaniakeaHelper as lh
 # from bkcharts.attributes import color
+
+# list of all 4 directions on the board, as (x,y) offsets
+__directions = [(1,0),(0,1),(-1,0),(0,-1)]
 
 # Board fields explained:
 #   0000 0000 0000 0000 0000 0000 0000 0000 -> empty
@@ -26,9 +29,6 @@ import numpy as np
 #   ... 0000 0001 0001                      -> two white pieces stacked 
 #   ... 0011 0001 0011                      -> black, white, black stack
 class Board():
-
-    # list of all 8 directions on the board, as (x,y) offsets
-    __directions = [(1,1),(1,0),(1,-1),(0,-1),(-1,-1),(-1,0),(-1,1),(0,1)]
 
     def __init__(self):
         "Set up initial board configuration."
@@ -96,7 +96,55 @@ class Board():
                     moves.add(newmove)
         return list(moves)
     
-    
+    @staticmethod
+    def step_move(board, color, lastPosition=None, newPosition=None):
+        for y in range(6):
+            for x in range(8):
+                if board[x][y] == -1 or board[x][y] == 0: continue
+                from_stack = lh.decode_stack(board[x][y])
+                height = len(from_stack)
+                top_color = from_stack[height - 1]
+                for tuple in __directions:
+                    new_x = x + tuple[0] * height
+                    new_y = y + tuple[1] * height
+
+                    if new_x < 0 or new_x >= 8:
+                        new_x = -1
+                        new_y = -1
+                        from_stack.pop()
+                        cloned_board = np.copy(board)
+                        cloned_board[x][y] = lh.encode_stack(from_stack)
+                        cloned_board[6][0 if color == 1 else 1] += 1
+                        Board.step_move(cloned_board, color, (x, y), (new_x, new_y))
+                        continue
+
+                    if (color == 1 and new_y >= 6) or (color == -1 and new_y < 0):
+                        new_x = -1
+                        new_y = -1
+                        from_stack.pop()
+                        cloned_board = np.copy(board)
+                        cloned_board[x][y] = lh.encode_stack(from_stack)
+                        cloned_board[6][2 + (0 if color == 1 else 1)] += 1
+                        Board.step_move(cloned_board, color, (x, y), (new_x, new_y))
+                        continue
+                    
+                    if board[x][y] == -1: continue
+
+                    to_stack = lh.decode_stack(board[x][y])
+
+                    if len(to_stack) == 3: continue
+
+                    #TODO: Last und New überprüfen
+                    to_stack.append(color)
+                    from_stack.pop()
+                    cloned_board = np.copy(board)
+                    cloned_board[x][y] = lh.encode_stack(from_stack)
+                    cloned_board[new_x][new_y] = lh.encode_stack(to_stack)
+                    Board.step_move(cloned_board, color, (x, y), (new_x, new_y))
+
+                    
+
+
 
     def has_legal_moves(self):
         for y in range(self.n):
@@ -146,5 +194,3 @@ class Board():
         if (self.get_stack_height(x,y) == 1):
             return 1 if self.board << 1 == 0 else -1
         return 1 if self.board << (2 ** self.get_stack_height(x,y) + 1) else -1
-
-test = Board()
