@@ -124,7 +124,7 @@ class Board():
         (x,y) = move
 
         # Add the piece to the empty square.
-        assert self[x][y] != -1 and not self.isfullstack(x, y)
+        assert self.board[x][y] != -1 and not self.isfullstack(x, y)
         self[x][y] = color
 
     def is_fullstack(self, x, y):
@@ -140,4 +140,11 @@ class Board():
         else: 
             return 0
         
+    # returns 1 for black and 0 for white
+    def get_highest_piece(self, x, y):
+        assert self.get_stack_height(x,y) != 0
+        if (self.get_stack_height(x,y) == 1):
+            return 1 if self.board << 1 == 0 else -1
+        return 1 if self.board << (2 ** self.get_stack_height(x,y) + 1) else -1
+
 test = Board()
