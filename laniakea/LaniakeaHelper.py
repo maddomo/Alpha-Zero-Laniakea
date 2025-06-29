@@ -3,7 +3,6 @@ def encode_stack(list):
 
     result = 0
 
-    assert len(list) == 3
     for i in list:
         result <<= 4
         result |= (0b1 if i == 1 else 0b11)
@@ -38,3 +37,7 @@ print(bin(num))
 
 dec_list = decode_stack(num)
 print(dec_list)
+
+dec_list.pop()
+num = encode_stack(dec_list)
+print(dec_list, bin(num), get_stack_height(num), get_top_color(num))
