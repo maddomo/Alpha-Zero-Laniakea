@@ -64,7 +64,7 @@ class Board():
         board[2][rows] = 0 #White pieces in black's space
         board[3][rows] = 0 #Black pieces in white's space
         self.board = np.array(board)
-
+        insert_plate = self.get_random_plate()
             
     def get_random_plate(self):
         randomIndex = random.randint(0,2)
@@ -90,21 +90,8 @@ class Board():
         (1 for white, -1 for black)
         @param color not used and came from previous version.        
         """
-        moves = set()  # stores the legal moves.
-
-        piecesAtHome = self[6][0 if color == 1 else 1]
-        
-        
-        
-
-
-        # Get all the empty squares (color==0)
-        for y in range(self.n):
-            for x in range(self.n):
-                if self[x][y]==0:
-                    newmove = (x,y)
-                    moves.add(newmove)
-        return list(moves)
+        return Board.step_move(self.board, color)
+       
     
     @staticmethod
     def step_move(board, color, lastPosition=None, newPosition=None):
@@ -239,9 +226,65 @@ class Board():
         """Perform the given move on the board; 
         color gives the color pf the piece to play (1=white,-1=black)
         """
+        from_pos, to_pos, tile, row, direction = move
 
-        (x,y) = move
+        if from_pos == (-1,-1):
+            #Move from Home
+            x, y = to_pos
+            stack = lh.decode_stack(self.board[x][y])
+            stack.append(color)
+            self.board[x][y] = lh.encode_stack(stack)
+            self.board[0 if color == 1 else 1][6] -= 1
+        else:
+            x1,y1 = from_pos
+            x2, y2 = to_pos
 
-        # Add the piece to the empty square.
-        assert self.board[x][y] != -1 and not self.isfullstack(x, y)
-        self[x][y] = color
+            from_stack = lh.decode_stack(self.board[x1][y1])
+            piece = from_stack.pop()
+            self.board[x1][y1] = lh.encode_stack(from_stack)
+
+            if(color == 1 and y2 >= 6) or (color == -1 and y2 < 0):
+                #Scoring Move
+                self.board[2 + (0 if color == 1 else 1)][6] += 1
+                return
+            elif x2 == -1 or y2 == -1:
+                #Back Home
+                self.board[0 if color == 1 else 1][6] += 1
+                return
+            else:
+                #Normal Move
+                to_stack = lh.decode_stack(self.board[x2][y2])
+                to_stack.append(piece)
+                self.board[x2][y2] = lh.encode_stack(to_stack)
+
+        self.insert_plate = self.insert_plate_into_row(row, tile, direction) 
+
+
+    def insert_plate_into_row(self,row,tile, direction):
+        """Insert a plate into the row at the given position.
+        @param row: row to insert the plate into
+        @param tile: tile to insert
+        @param direction: direction to insert the tile in (0=left, 1=right)
+        """
+         if direction == 'left':
+            ejected_tile = [self.board[6][row_index], self.board[7][row_index]]
+            for x in reversed(range(2, 8)):
+                self.board[x][row_index] = self.board[x - 2][row_index]
+            self.board[0][row_index] = tile[0]
+            self.board[1][row_index] = tile[1]
+            self.next_tile = ejected_tile
+            return ejected_tile
+
+        elif direction == 'right':
+            ejected_tile = [self.board[0][row_index], self.board[1][row_index]]
+            for x in range(0, 6):
+                self.board[x][row_index] = self.board[x + 2][row_index]
+            self.board[6][row_index] = tile[0]
+            self.board[7][row_index] = tile[1]
+            self.next_tile = ejected_tile
+            return ejected_tile
+
+        else:
+            raise ValueError("direction must be 'left' or 'right'")
+        
+    
