@@ -19,9 +19,6 @@ import numpy as np
 import LaniakeaHelper as lh
 # from bkcharts.attributes import color
 
-# list of all 4 directions on the board, as (x,y) offsets
-__directions = [(1,0),(0,1),(-1,0),(0,-1)]
-
 # Board field encoding explained assuming 32 bit integers:
 #   0b 0000 0000 0000 0000 0000 0000 0000 0000 -> empty  (0 decimal)
 #   0b 1111 1111 1111 1111 1111 1111 1111 1111 -> turtle (-1 decimal)
@@ -48,7 +45,6 @@ class Board():
         board = [[None for _ in range(rows + 1)] for _ in range(cols)]
         for i in range(rows):
             position = random.randint(0, 3) * 2
-
             board[position][i] = 0
             board[position + 1][i] = 0
         for i in range(rows):
@@ -64,7 +60,7 @@ class Board():
         board[2][rows] = 0 #White pieces in black's space
         board[3][rows] = 0 #Black pieces in white's space
         self.board = np.array(board)
-        insert_plate = self.get_random_plate()
+        self.insert_plate = self.get_random_plate()
             
     def get_random_plate(self):
         randomIndex = random.randint(0,2)
@@ -87,19 +83,25 @@ class Board():
 
     def get_legal_moves(self, color):
         """Returns all the legal moves for the given color.
-        (1 for white, -1 for black)
-        @param color not used and came from previous version.        
+        (1 for white, -1 for black)       
         """
         return Board.step_move(self.board, color)
        
-    
+    @staticmethod
+    def plate_positions(row):
+        if row == -1: return []
+        # 0-5 = insert from left into row
+        # 6-11 = insert from right into row
+        if row == -2: return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+        return [row, row + 6]
+
     @staticmethod
     def step_move(board, color, lastPosition=None, newPosition=None):
         # DESCRIBE MOVELIST
         moveList = []
         # Check if a move from home is possible and if so, move a piece to the board
         # Not checking all directions, as only the first row from each side is relevant
-        if board[0 if color == 1 else 1][6] >= 0:
+        if board[0 if color == 1 else 1][6] > 0:
             for x in range(8):
                 y = 0 if color == 1 else 5
                 square = board[x][y]
@@ -120,7 +122,7 @@ class Board():
                 cloned_board = np.copy(board)
                 cloned_board[x][y] = lh.encode_stack(stack)
                 if lastPosition is not None and newPosition is not None:
-                    moveList.append(((-1, -1), (x, y)))
+                    moveList.append(((-1, -1), (x, y), Board.plate_positions(y)))
                 else:
                     moveList.append(((-1, -1), (x, y), Board.step_move(cloned_board, color, (-1, -1), (x, y))))
                 
@@ -139,11 +141,12 @@ class Board():
 
                     # Setting new position early for the reversing move check
                     if new_x < 0 or new_x >= 8 or new_y < 0:
+                        # Signaling, that the last move was move to the home row
                         new_x = -1
                         new_y = -1
                     # Skip if move reverses the last move
                     if (lastPosition is not None and newPosition is not None):
-                        if (x, y) == newPosition and (new_x, new_y) == lastPosition: 
+                        if (x, y) == newPosition and (new_x, new_y) == lastPosition:
                             continue
 
                     # Out of bounds left or right
@@ -153,19 +156,22 @@ class Board():
                         cloned_board[x][y] = lh.encode_stack(from_stack_copy)
                         cloned_board[0 if color == 1 else 1][6] += 1
                         if lastPosition is not None and newPosition is not None:
-                            moveList.append(((x, y), (new_x, new_y)))
+                            moveList.append(((x, y), (new_x, new_y), Board.plate_positions(y)))
                         else:
                             moveList.append(((x, y), (new_x, new_y)), Board.step_move(cloned_board, color, (x, y), (new_x, new_y)))
                         continue
                     
                     # Scoring move
                     if (color == 1 and new_y >= 6) or (color == -1 and new_y < 0):
+                        # Signaling, that the last move was a scoring move
+                        new_x = -2
+                        new_y = -2
                         from_stack_copy.pop()
                         cloned_board = np.copy(board)
                         cloned_board[x][y] = lh.encode_stack(from_stack_copy)
                         cloned_board[2 + (0 if color == 1 else 1)][6] += 1
                         if lastPosition is not None and newPosition is not None:
-                            moveList.append(((x, y), (new_x, new_y)))
+                            moveList.append(((x, y), (new_x, new_y), Board.plate_positions(y)))
                         else:
                             moveList.append(((x, y), (new_x, new_y)), Board.step_move(cloned_board, color, (x, y), (new_x, new_y)))
                         continue
@@ -177,7 +183,7 @@ class Board():
                         cloned_board[x][y] = lh.encode_stack(from_stack_copy)
                         cloned_board[0 + (0 if color == 1 else 1)][6] += 1
                         if lastPosition is not None and newPosition is not None:
-                            moveList.append(((x, y), (new_x, new_y)))
+                            moveList.append(((x, y), (new_x, new_y), Board.plate_positions(y)))
                         else:
                             moveList.append(((x, y), (new_x, new_y)), Board.step_move(cloned_board, color, (x, y), (new_x, new_y)))
                         continue
@@ -192,23 +198,18 @@ class Board():
                     cloned_board[x][y] = lh.encode_stack(from_stack_copy)
                     cloned_board[new_x][new_y] = lh.encode_stack(to_stack)
                     if lastPosition is not None and newPosition is not None:
-                        moveList.append(((x, y), (new_x, new_y)))
+                        moveList.append(((x, y), (new_x, new_y), Board.plate_positions(y)))
                     else:
                         moveList.append(((x, y), (new_x, new_y)), Board.step_move(cloned_board, color, (x, y), (new_x, new_y)))
         return moveList
                     
 
-
-
-    def has_legal_moves(self, board, color):
+    def has_legal_moves(self, color):
         """Check whether the current player has any legal moves left.
         Returns True if there are legal moves, False otherwise.
         """
-        move_list = Board.step_move(board, color)
-        if not any(move_list): 
-            return False
-        return True
-
+        move_list = self.get_legal_moves(color)
+        return any(move_list)
 
     
     def is_win(self, color):
@@ -218,73 +219,120 @@ class Board():
         """
         is_in_endzone = self.board[2 + (0 if color == 1 else 1)][6] == 5
 
-        opp_has_moves_left = self.has_legal_moves(self.board, 1 if color == -1 else 1)
+        opp_has_moves_left = self.has_legal_moves(color)
 
         return is_in_endzone or (not opp_has_moves_left)
 
-    def execute_move(self, move, color):
+    def execute_move(self, actions, color):
         """Perform the given move on the board; 
         color gives the color pf the piece to play (1=white,-1=black)
         """
-        from_pos, to_pos, tile, row, direction = move
+        moves, insert_row = actions
 
-        if from_pos == (-1,-1):
-            #Move from Home
-            x, y = to_pos
-            stack = lh.decode_stack(self.board[x][y])
-            stack.append(color)
-            self.board[x][y] = lh.encode_stack(stack)
-            self.board[0 if color == 1 else 1][6] -= 1
-        else:
-            x1,y1 = from_pos
-            x2, y2 = to_pos
-
-            from_stack = lh.decode_stack(self.board[x1][y1])
-            piece = from_stack.pop()
-            self.board[x1][y1] = lh.encode_stack(from_stack)
-
-            if(color == 1 and y2 >= 6) or (color == -1 and y2 < 0):
-                #Scoring Move
-                self.board[2 + (0 if color == 1 else 1)][6] += 1
-                return
-            elif x2 == -1 or y2 == -1:
-                #Back Home
-                self.board[0 if color == 1 else 1][6] += 1
-                return
+        for move in moves:
+            from_pos, to_pos = move[0], move[1]
+            if from_pos == (-1,-1):
+                # Move from Home
+                x, y = to_pos
+                stack = lh.decode_stack(self.board[x][y])
+                stack.append(color)
+                self.board[x][y] = lh.encode_stack(stack)
+                self.board[0 if color == 1 else 1][6] -= 1
             else:
-                #Normal Move
-                to_stack = lh.decode_stack(self.board[x2][y2])
-                to_stack.append(piece)
-                self.board[x2][y2] = lh.encode_stack(to_stack)
+                x1, y1 = from_pos
+                x2, y2 = to_pos
 
-        self.insert_plate = self.insert_plate_into_row(row, tile, direction) 
+                from_stack = lh.decode_stack(self.board[x1][y1])
+                piece = from_stack.pop()
+                self.board[x1][y1] = lh.encode_stack(from_stack)
+
+                if(color == 1 and y2 >= 6) or (color == -1 and y2 < 0):
+                    # Scoring Move
+                    self.board[2 + (0 if color == 1 else 1)][6] += 1
+                    return
+                elif x2 == -1 or y2 == -1:
+                    # Back Home
+                    self.board[0 if color == 1 else 1][6] += 1
+                    return
+                else:
+                    # Normal Move
+                    to_stack = lh.decode_stack(self.board[x2][y2])
+                    to_stack.append(piece)
+                    self.board[x2][y2] = lh.encode_stack(to_stack)
+
+        self.insert_plate = self.insert_plate_into_row(insert_row) 
 
 
-    def insert_plate_into_row(self,row,tile, direction):
+    def insert_plate_into_row(self, row):
         """Insert a plate into the row at the given position.
+        row <= 5 indicates the row is inserted from the left side.   -> 0000
+        row > 5 indicates the row is inserted from the right side.      0000 <-
         @param row: row to insert the plate into
-        @param tile: tile to insert
-        @param direction: direction to insert the tile in (0=left, 1=right)
         """
-         if direction == 'left':
-            ejected_tile = [self.board[6][row_index], self.board[7][row_index]]
-            for x in reversed(range(2, 8)):
-                self.board[x][row_index] = self.board[x - 2][row_index]
-            self.board[0][row_index] = tile[0]
-            self.board[1][row_index] = tile[1]
-            self.next_tile = ejected_tile
-            return ejected_tile
+        assert row >= 0 and row < 12, "Row must be between 0 and 11"
+        if row < 6:
+            removed_tiles = [self.board[6][row], self.board[7][row]]
+            for tile in removed_tiles:
+                if tile == 0 or tile == -1:
+                    continue
+                # Return the pieces to the home row
+                stack = lh.decode_stack(tile)
+                for piece in stack:
+                    self.board[0 + (0 if piece == 1 else 1)][6] += 1
 
-        elif direction == 'right':
-            ejected_tile = [self.board[0][row_index], self.board[1][row_index]]
-            for x in range(0, 6):
-                self.board[x][row_index] = self.board[x + 2][row_index]
-            self.board[6][row_index] = tile[0]
-            self.board[7][row_index] = tile[1]
-            self.next_tile = ejected_tile
-            return ejected_tile
+            # Shift the row to the right
+            board_copy = np.copy(self.board)
+            for i in range(2, 8):
+                self.board[i][row] = board_copy[i - 2][row]
+            self.board[0][row] = self.insert_plate[0]
+            self.board[1][row] = self.insert_plate[1]
+            self.insert_plate = [board_copy[6][row], board_copy[7][row]]
 
         else:
-            raise ValueError("direction must be 'left' or 'right'")
-        
-    
+            removed_tiles = [self.board[0][row - 6], self.board[1][row - 6]]
+            for tile in removed_tiles:
+                if tile == 0 or tile == -1:
+                    continue
+                # Return the pieces to the home row
+                stack = lh.decode_stack(tile)
+                for piece in stack:
+                    self.board[0 + (0 if piece == 1 else 1)][6] += 1
+                # Shift the row to the left
+                board_copy = np.copy(self.board)
+                for i in range(0, 6):
+                    self.board[i][row - 6] = board_copy[i + 2][row - 6]
+                self.board[6][row - 6] = self.insert_plate[0]
+                self.board[7][row - 6] = self.insert_plate[1]
+                self.insert_plate = [board_copy[0][row - 6], board_copy[1][row - 6]]
+
+board = Board()
+board.board[0][6] = 0
+board.board[1][6] = 0
+assert board.step_move(board.board, 1) == []
+assert board.step_move(board.board, -1) == []
+assert not board.has_legal_moves(1)
+assert not board.has_legal_moves(-1)
+assert board.is_win(1)
+assert board.is_win(-1)
+
+board = Board()
+assert board.step_move(board.board, 1) != []
+assert board.step_move(board.board, -1) != []
+assert board.has_legal_moves(1)
+assert board.has_legal_moves(-1)
+assert not board.is_win(1)
+assert not board.is_win(-1)
+
+
+moves = board.get_legal_moves(1)
+first_move = moves[0][0], moves[0][1]
+second_stage = moves[0][2][0]
+second_move = second_stage[0], second_stage[1]
+insert_row = second_stage[2][1]
+print("Possible moves:", moves, "\n\n")
+print("first move:", first_move, "second move:", second_move, "plate to insert:", board.insert_plate, "insert into row:", insert_row)
+
+print("Board before move:\n", board.board)
+actions = ([first_move, second_move], insert_row)
+board.execute_move(actions, 1)
+print("Board after move:\n", board.board)

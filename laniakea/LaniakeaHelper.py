@@ -31,13 +31,3 @@ def decode_stack(n):
         n >>= 4  # shift right by 4 bits (1 nibble)
     return result
 
-list = [-1, 1, 1]
-num = encode_stack(list)
-print(bin(num))
-
-dec_list = decode_stack(num)
-print(dec_list)
-
-dec_list.pop()
-num = encode_stack(dec_list)
-print(dec_list, bin(num), get_stack_height(num), get_top_color(num))

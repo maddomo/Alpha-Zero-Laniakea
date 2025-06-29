@@ -71,7 +71,7 @@ class LaniakeaGame(Game):
         return 1e-4
 
     def getCanonicalForm(self, board, player):
-        # return state if player==1, else return -state if player==-1
+        # Don't forget fragment type channel
         return player*board
 
     def getSymmetries(self, board, pi):
