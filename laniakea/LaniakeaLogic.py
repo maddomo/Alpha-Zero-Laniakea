@@ -193,12 +193,16 @@ class Board():
 
 
 
-    def has_legal_moves(self):
-        for y in range(self.n):
-            for x in range(self.n):
-                if self[x][y]==0:
-                    return True
-        return False
+    def has_legal_moves(board, color):
+        """Check whether the current player has any legal moves left.
+        Returns True if there are legal moves, False otherwise.
+        """
+        move_list = step_move(board, color)
+        if not any(move_list): 
+            return False
+        return True
+
+
     
     def is_win(self, color):
         """Check whether the given player has won; Player has won by either bringing all his pieces
