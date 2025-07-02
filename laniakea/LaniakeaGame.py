@@ -24,12 +24,23 @@ class LaniakeaGame(Game):
         return np.array(b.board)
 
     def getBoardSize(self):
-        # (a,b) tuple
-        return (self.n, self.n)
+        # Tensor dimension
+        # 1 Dim for turtles
+        # 1 Dim for empty spaces
+        # 6 Dims for piece stacks (2 colors * 3 height)
+        # 1 Dim Player turn
+        # 2 Dim for amount of home pieces black/white
+        # 2 Dim for "scored" pieces 
+        # 3 Dims for free tile
+        # ideas to try if AI performs poorly:
+        # (5 * total dims for board history)
+        # (1 Dim for movable pieces)
+        return (8, 6, 16) 
 
     def getActionSize(self):
         # return number of actions
-        return self.n*self.n + 1
+        # 8*6 Board, 4 Directions, 8 possible moves from home area, 12 possible inserts
+        return pow((8*6 * 4) + 8, 2) * 12
 
     def getNextState(self, board, player, action):
         # if player takes action on board, return next (board,player)

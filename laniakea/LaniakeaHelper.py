@@ -1,4 +1,3 @@
-
 def encode_stack(list):
 
     result = 0
@@ -24,6 +23,8 @@ def get_top_color(n):
 
 def decode_stack(n):
     result = []
+    if n is None or n == 0:
+        return result
     while n > 0:
         nibble = n & 0xF  # mask lowest 4 bits
         if nibble != 0:
@@ -33,7 +34,8 @@ def decode_stack(n):
 
 INSERT_ROWS = 12
 MAX_MOVES = 200
-ACTION_SIZE = MAX_MOVES * MAX_MOVES * INSERT_ROWS
+ROTATE_OPTIONS = 2
+ACTION_SIZE = MAX_MOVES * MAX_MOVES * INSERT_ROWS * ROTATE_OPTIONS
 
 HOME_POS = (-1, -1)
 ALL_MOVES = []
@@ -59,21 +61,40 @@ MOVE_TO_ID = {m: i for i, m in enumerate(ALL_MOVES)}
 ID_TO_MOVE = {i: m for m, i in MOVE_TO_ID.items()}
 
 # ---------- Encode-Funktion ----------
-def encode_action(move1, move2, insert_row):
+def encode_action(move1, move2, insert_row, rotate_tile):
     """
-    Kodiert (move1, move2, insert_row) als eindeutigen Integer (0–479999)
+    Encodes (move1, move2, insert_row, rotate_tile) to a unique integer (0–959999)
     """
     id1 = MOVE_TO_ID[move1]
     id2 = MOVE_TO_ID[move2]
-    return (id1 * MAX_MOVES + id2) * INSERT_ROWS + insert_row
+    return ((id1 * MAX_MOVES + id2) * INSERT_ROWS + insert_row) * ROTATE_OPTIONS + rotate_tile
 
 # ---------- Decode-Funktion ----------
 def decode_action(index):
     """
-    Dekodiert Integer zurück zu (move1, move2, insert_row)
+    Decodes integer back to (move1, move2, insert_row, rotate_tile)
     """
-    pair, insert_row = divmod(index, INSERT_ROWS)
-    id1, id2 = divmod(pair, MAX_MOVES)
-    return ID_TO_MOVE[id1], ID_TO_MOVE[id2], insert_row
+    pair, rotate = divmod(index, ROTATE_OPTIONS)
+    pair_row, insert_row = divmod(pair, INSERT_ROWS)
+    id1, id2 = divmod(pair_row, MAX_MOVES)
+    return ID_TO_MOVE[id1], ID_TO_MOVE[id2], insert_row, rotate
 
+def encode_plate(plate):
+    if plate == [-1, -1]:
+        return 0
+    elif plate in [[-1, 0], [0, -1]]:
+        return 1
+    elif plate == [0, 0]:
+        return 2
+    else:
+        raise ValueError("Invalid plate encoding: {}".format(plate))
 
+def decode_plate(index):
+    if index == 0:
+        return [-1, -1]
+    elif index == 1:
+        return [-1, 0]
+    elif index == 2:
+        return [0, 0]
+    else:
+        raise ValueError("Invalid plate decoding: {}".format(index))
