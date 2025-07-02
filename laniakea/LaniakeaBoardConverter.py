@@ -6,7 +6,7 @@ from LaniakeaLogic import Board
 # The tensor has the shape (8, 6, 16):
 # - 8 columns (x-axis)
 # - 6 rows (y-axis)
-# - 15 channels:
+# - 16 channels:
 #   - 1 channel for turtle
 #   - 1 channel for empty fields
 #   - 3 channels for white pieces (bottom to top)
@@ -120,6 +120,7 @@ for i in range(100):
         break
     moves, rotatable = board.get_legal_moves(1)
     f_move = random.choice(moves)
+    print("Available Moves:", moves[0], "\n")
     print("First Move:", f_move[0], f_move[1], "\n")
     first_move = f_move[0], f_move[1]
     second_stage = f_move[2]

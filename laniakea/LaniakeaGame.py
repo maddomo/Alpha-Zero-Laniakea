@@ -3,7 +3,8 @@ import sys
 sys.path.append('..')
 from Game import Game
 from .LaniakeaLogic import Board
-import numpy as np
+import laniakea.LaniakeaHelper as lh
+import laniakea.LaniakeaBoardConverter as lbc
 
 """
 Game class implementation for the game of TicTacToe.
@@ -15,13 +16,10 @@ Date: Jan 5, 2018.
 Based on the OthelloGame by Surag Nair.
 """
 class LaniakeaGame(Game):
-    def __init__(self, n=3):
-        self.n = n
 
     def getInitBoard(self):
         # return initial board (numpy board)
-        b = Board(self.n)
-        return np.array(b.board)
+        return lbc.board_to_tensor(Board(), 1)
 
     def getBoardSize(self):
         # Tensor dimension
@@ -35,42 +33,43 @@ class LaniakeaGame(Game):
         # ideas to try if AI performs poorly:
         # (5 * total dims for board history)
         # (1 Dim for movable pieces)
-        return (8, 6, 16) 
+        return (8, 6, 16)
 
     def getActionSize(self):
         # return number of actions
-        # 8*6 Board, 4 Directions, 8 possible moves from home area, 12 possible inserts
-        return pow((8*6 * 4) + 8, 2) * 12
+        # 8*6 Board, 4 Directions, 8 possible moves from home area, 12 possible inserts, 2 rotations
+        return lh.ACTION_SIZE
 
     def getNextState(self, board, player, action):
         # if player takes action on board, return next (board,player)
         # action must be a valid move
-        if action == self.n*self.n:
-            return (board, -player)
-        b = Board(self.n)
-        b.pieces = np.copy(board)
-        move = (int(action/self.n), action%self.n)
+        b = lbc.tensor_to_board(board)
+        move = lh.decode_action(action)
         b.execute_move(move, player)
-        return (b.pieces, -player)
+        return (lbc.board_to_tensor(b, -player), -player)
 
     def getValidMoves(self, board, player):
         # return a fixed size binary vector
-        valids = [0]*self.getActionSize()
-        b = Board(self.n)
-        b.pieces = np.copy(board)
-        legalMoves =  b.get_legal_moves(player)
-        if len(legalMoves)==0:
-            valids[-1]=1
-            return np.array(valids)
-        for x, y in legalMoves:
-            valids[self.n*x+y]=1
-        return np.array(valids)
-
+        b = lbc.tensor_to_board(board)
+        valid_moves, rotatable = b.get_legal_moves(player)
+        valid_actions = [0 for _ in range(self.getActionSize())]
+        for first_move in valid_moves:
+            for second_move in first_move[2]:
+                for insert_row in second_move[2]:
+                    if (rotatable == 1):
+                        for rotate_tile in [0, 1]:
+                            i = lh.encode_action(first_move[0], second_move[0], insert_row, rotate_tile)
+                            valid_actions[i] = 1
+                    # If no rotation is possible, just add one action without rotation
+                    else:
+                        i = lh.encode_action(first_move[0], second_move[0], insert_row, 0)
+                        valid_actions[i] = 1
+        return valid_actions
+        
     def getGameEnded(self, board, player):
         # return 0 if not ended, 1 if player 1 won, -1 if player 1 lost
         # player = 1
-        b = Board(self.n)
-        b.pieces = np.copy(board)
+        b = lbc.tensor_to_board(board)
 
         if b.is_win(player):
             return 1
@@ -78,59 +77,39 @@ class LaniakeaGame(Game):
             return -1
         if b.has_legal_moves():
             return 0
-        # draw has a very little value 
-        return 1e-4
+
 
     def getCanonicalForm(self, board, player):
-        # Don't forget fragment type channel
-        return player*board
+        if player == 1:
+            return board.copy()
+        else:
+            board = board.copy()  # Don't modify the original
 
+            # Swap white (2:5) and black (5:8) piece channels
+            white_pieces = board[:, :, 2:5].copy()
+            black_pieces = board[:, :, 5:8].copy()
+            board[:, :, 2:5] = black_pieces
+            board[:, :, 5:8] = white_pieces
+
+            # Set player channel to 1 (always from white's perspective)
+            board[:, :, 8] = 1.0
+
+            # Swap home pieces (channels 9 and 10)
+            white_home = board[:, :, 9].copy()
+            black_home = board[:, :, 10].copy()
+            board[:, :, 9] = black_home
+            board[:, :, 10] = white_home
+
+            # Swap scored pieces (channels 11 and 12)
+            white_score = board[:, :, 11].copy()
+            black_score = board[:, :, 12].copy()
+            board[:, :, 11] = black_score
+            board[:, :, 12] = white_score
+
+            return board
+            
     def getSymmetries(self, board, pi):
-        # mirror, rotational
-        assert(len(pi) == self.n**2+1)  # 1 for pass
-        pi_board = np.reshape(pi[:-1], (self.n, self.n))
-        l = []
-
-        for i in range(1, 5):
-            for j in [True, False]:
-                newB = np.rot90(board, i)
-                newPi = np.rot90(pi_board, i)
-                if j:
-                    newB = np.fliplr(newB)
-                    newPi = np.fliplr(newPi)
-                l += [(newB, list(newPi.ravel()) + [pi[-1]])]
-        return l
+        return [(board, pi)]  # No symmetries in this game
 
     def stringRepresentation(self, board):
-        # 8x8 numpy array (canonical board)
-        return board.tostring()
-
-    @staticmethod
-    def display(board):
-        n = board.shape[0]
-
-        print("   ", end="")
-        for y in range(n):
-            print (y,"", end="")
-        print("")
-        print("  ", end="")
-        for _ in range(n):
-            print ("-", end="-")
-        print("--")
-        for y in range(n):
-            print(y, "|",end="")    # print the row #
-            for x in range(n):
-                piece = board[y][x]    # get the piece to print
-                if piece == -1: print("X ",end="")
-                elif piece == 1: print("O ",end="")
-                else:
-                    if x==n:
-                        print("-",end="")
-                    else:
-                        print("- ",end="")
-            print("|")
-
-        print("  ", end="")
-        for _ in range(n):
-            print ("-", end="-")
-        print("--")
+        return board.tobytes()
