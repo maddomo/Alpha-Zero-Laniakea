@@ -3,8 +3,8 @@ import sys
 sys.path.append('..')
 from Game import Game
 from .LaniakeaLogic import Board
-import laniakea.LaniakeaHelper as lh
-import laniakea.LaniakeaBoardConverter as lbc
+from .LaniakeaHelper import ACTION_SIZE, decode_action, encode_action
+from .LaniakeaBoardConverter import board_to_tensor, tensor_to_board
 
 """
 Game class implementation for the game of TicTacToe.
@@ -19,7 +19,7 @@ class LaniakeaGame(Game):
 
     def getInitBoard(self):
         # return initial board (numpy board)
-        return lbc.board_to_tensor(Board(), 1)
+        return board_to_tensor(Board(), 1)
 
     def getBoardSize(self):
         # Tensor dimension
@@ -38,19 +38,19 @@ class LaniakeaGame(Game):
     def getActionSize(self):
         # return number of actions
         # 8*6 Board, 4 Directions, 8 possible moves from home area, 12 possible inserts, 2 rotations
-        return lh.ACTION_SIZE
+        return ACTION_SIZE
 
     def getNextState(self, board, player, action):
         # if player takes action on board, return next (board,player)
         # action must be a valid move
-        b = lbc.tensor_to_board(board)
-        move = lh.decode_action(action)
+        b = tensor_to_board(board)
+        move = decode_action(action)
         b.execute_move(move, player)
-        return (lbc.board_to_tensor(b, -player), -player)
+        return (board_to_tensor(b, -player), -player)
 
     def getValidMoves(self, board, player):
         # return a fixed size binary vector
-        b = lbc.tensor_to_board(board)
+        b = tensor_to_board(board)
         valid_moves, rotatable = b.get_legal_moves(player)
         valid_actions = [0 for _ in range(self.getActionSize())]
         for first_move in valid_moves:
@@ -58,18 +58,18 @@ class LaniakeaGame(Game):
                 for insert_row in second_move[2]:
                     if (rotatable == 1):
                         for rotate_tile in [0, 1]:
-                            i = lh.encode_action(first_move[0], second_move[0], insert_row, rotate_tile)
+                            i = encode_action(first_move[0], second_move[0], insert_row, rotate_tile)
                             valid_actions[i] = 1
                     # If no rotation is possible, just add one action without rotation
                     else:
-                        i = lh.encode_action(first_move[0], second_move[0], insert_row, 0)
+                        i = encode_action(first_move[0], second_move[0], insert_row, 0)
                         valid_actions[i] = 1
         return valid_actions
         
     def getGameEnded(self, board, player):
         # return 0 if not ended, 1 if player 1 won, -1 if player 1 lost
         # player = 1
-        b = lbc.tensor_to_board(board)
+        b = tensor_to_board(board)
 
         if b.is_win(player):
             return 1

@@ -34,33 +34,21 @@ args = dotdict({
 class NNetWrapper(NeuralNet):
     def __init__(self, game):
         self.nnet = onnet(game, args)
-        self.board_x, self.board_y = game.getBoardSize()
+        self.board_x, self.board_y, self.board_c = game.getBoardSize()
         self.action_size = game.getActionSize()
 
     def train(self, examples):
-        """
-        examples: list of examples, each example is of form (board, pi, v)
-        """
         input_boards, target_pis, target_vs = list(zip(*examples))
         input_boards = np.asarray(input_boards)
         target_pis = np.asarray(target_pis)
         target_vs = np.asarray(target_vs)
-        self.nnet.model.fit(x = input_boards, y = [target_pis, target_vs], batch_size = args.batch_size, epochs = args.epochs)
+        self.nnet.model.fit(x=input_boards, y=[target_pis, target_vs], batch_size=args.batch_size, epochs=args.epochs)
 
     def predict(self, board):
-        """
-        board: np array with board
-        """
-        # timing
         start = time.time()
-
-        # preparing input
-        board = board[np.newaxis, :, :]
-
-        # run
+        # board shape should be (board_x, board_y, board_c)
+        board = board[np.newaxis, :, :, :]  # Add batch dimension with channels
         pi, v = self.nnet.model.predict(board, verbose=False)
-
-        #print('PREDICTION TIME TAKEN : {0:03f}'.format(time.time()-start))
         return pi[0], v[0]
 
     def save_checkpoint(self, folder='checkpoint', filename='checkpoint.pth.tar'):

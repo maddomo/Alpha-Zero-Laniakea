@@ -3,8 +3,8 @@ import logging
 import coloredlogs
 
 from Coach import Coach
-from tictactoe.TicTacToeGame import TicTacToeGame as Game
-from tictactoe.keras.NNet import NNetWrapper as nn
+from laniakea.LaniakeaGame import LaniakeaGame as Game
+from laniakea.keras.NNet import NNetWrapper as nn
 from utils import *
 
 log = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ args = dotdict({
 
 def main():
     log.info('Loading %s...', Game.__name__)
-    g = Game(3)
+    g = Game()
 
     log.info('Loading %s...', nn.__name__)
     nnet = nn(g)

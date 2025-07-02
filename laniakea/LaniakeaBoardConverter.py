@@ -1,6 +1,6 @@
 import numpy as np
-import LaniakeaHelper as lh
-from LaniakeaLogic import Board
+from .LaniakeaHelper import decode_stack, encode_stack
+from .LaniakeaLogic import Board
 
 # Converts a Laniakea board to a tensor representation
 # The tensor has the shape (8, 6, 16):
@@ -31,7 +31,7 @@ def board_to_tensor(board, player):
             elif field == 0:
                 tensor[x][y][1] = 1  # Empty
             else:
-                stack = lh.decode_stack(field)
+                stack = decode_stack(field)
                 stack_height = len(stack)
                 assert stack_height <= 3 and stack_height > 0, "Invalid stack height"
 
@@ -76,9 +76,9 @@ def tensor_to_board(tensor):
                     if tensor[x][y][i] == 1:
                         offset = i - 2
                         color = 1 if offset < 3 else -1
-                        stack = lh.decode_stack(board_array[x][y])
+                        stack = decode_stack(board_array[x][y])
                         stack.append(color)
-                        board_array[x][y] = lh.encode_stack(stack)
+                        board_array[x][y] = encode_stack(stack)
 
     # Decode home and scored pieces from constant channel slices
     white_home = int(round(tensor[0][0][9] * 8))
