@@ -33,7 +33,7 @@ def decode_stack(n):
     return result
 
 INSERT_ROWS = 12
-MAX_MOVES = 200
+MAX_MOVES = 8*6*4*3 + 8 # 8x6 Board, 4 Directions, 3 possible stack heights + 8 moves from home
 ROTATE_OPTIONS = 2
 ACTION_SIZE = MAX_MOVES * MAX_MOVES * INSERT_ROWS * ROTATE_OPTIONS
 
@@ -44,8 +44,9 @@ ALL_MOVES = []
 for y in range(6):
     for x in range(8):
         for dx, dy in [(1,0), (0,1), (-1,0), (0,-1)]:
-            tx, ty = x + dx, y + dy
-            if 0 <= tx < 8 and 0 <= ty < 6:
+            # Multiply with height for stacks
+            for i in range(1, 4):
+                tx, ty = x + dx * i, y + dy * i
                 ALL_MOVES.append(((x, y), (tx, ty)))
 
 # Home-Züge (für Weiß z. B. aus Home auf y=0, für Schwarz y=5)
@@ -53,7 +54,7 @@ for x in range(8):
     ALL_MOVES.append((HOME_POS, (x, 0)))  # Weiß
     ALL_MOVES.append((HOME_POS, (x, 5)))  # Schwarz
 
-# Maximal 200 Moves verwenden
+# Maximal MAX_MOVES Moves verwenden
 ALL_MOVES = ALL_MOVES[:MAX_MOVES]
 
 # ---------- Mapping ----------
@@ -77,7 +78,7 @@ def decode_action(index):
     pair, rotate = divmod(index, ROTATE_OPTIONS)
     pair_row, insert_row = divmod(pair, INSERT_ROWS)
     id1, id2 = divmod(pair_row, MAX_MOVES)
-    return ID_TO_MOVE[id1], ID_TO_MOVE[id2], insert_row, rotate
+    return (ID_TO_MOVE[id1], ID_TO_MOVE[id2]), insert_row, rotate
 
 def encode_plate(plate):
     if plate == [-1, -1]:

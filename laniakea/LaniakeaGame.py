@@ -44,8 +44,7 @@ class LaniakeaGame(Game):
         # if player takes action on board, return next (board,player)
         # action must be a valid move
         b = tensor_to_board(board)
-        move = decode_action(action)
-        b.execute_move(move, player)
+        b.execute_move(decode_action(action), player)
         return (board_to_tensor(b, -player), -player)
 
     def getValidMoves(self, board, player):
@@ -58,11 +57,11 @@ class LaniakeaGame(Game):
                 for insert_row in second_move[2]:
                     if (rotatable == 1):
                         for rotate_tile in [0, 1]:
-                            i = encode_action(first_move[0], second_move[0], insert_row, rotate_tile)
+                            i = encode_action((first_move[0], first_move[1]), (second_move[0], second_move[1]), insert_row, rotate_tile)
                             valid_actions[i] = 1
                     # If no rotation is possible, just add one action without rotation
                     else:
-                        i = encode_action(first_move[0], second_move[0], insert_row, 0)
+                        i = encode_action((first_move[0], first_move[1]), (second_move[0], second_move[1]), insert_row, 0)
                         valid_actions[i] = 1
         return valid_actions
         
@@ -75,7 +74,7 @@ class LaniakeaGame(Game):
             return 1
         if b.is_win(-player):
             return -1
-        if b.has_legal_moves():
+        if b.has_legal_moves(player):
             return 0
 
 
