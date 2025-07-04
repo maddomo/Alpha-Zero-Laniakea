@@ -3,7 +3,7 @@ import sys
 sys.path.append('..')
 from Game import Game
 from .LaniakeaLogic import Board
-from .LaniakeaHelper import ACTION_SIZE, decode_action, encode_action
+from .actions import ACTION_SIZE, decode_action, encode_action
 from .LaniakeaBoardConverter import board_to_tensor, tensor_to_board
 
 """
@@ -41,29 +41,34 @@ class LaniakeaGame(Game):
         return ACTION_SIZE
 
     def getNextState(self, board, player, action):
-        # if player takes action on board, return next (board,player)
-        # action must be a valid move
         b = tensor_to_board(board)
-        b.execute_move(decode_action(action), player)
+        move1, move2, insert_row, rotate_tile = decode_action(action)
+        moves = [move1]
+        if move2 is not None:
+            moves.append(move2)
+        actions = (moves, insert_row, rotate_tile)
+        b.execute_move(actions, player)
+        print(b.board[2][6]) #print score
+        print(f"Player {player} executed action: {actions}")
         return (board_to_tensor(b, -player), -player)
 
     def getValidMoves(self, board, player):
-        # return a fixed size binary vector
         b = tensor_to_board(board)
-        valid_moves, rotatable = b.get_legal_moves(player)
         valid_actions = [0 for _ in range(self.getActionSize())]
-        for first_move in valid_moves:
-            for second_move in first_move[2]:
-                for insert_row in second_move[2]:
-                    if (rotatable == 1):
-                        for rotate_tile in [0, 1]:
-                            i = encode_action((first_move[0], first_move[1]), (second_move[0], second_move[1]), insert_row, rotate_tile)
-                            valid_actions[i] = 1
-                    # If no rotation is possible, just add one action without rotation
-                    else:
-                        i = encode_action((first_move[0], first_move[1]), (second_move[0], second_move[1]), insert_row, 0)
-                        valid_actions[i] = 1
+
+        first_moves, rotatable = b.get_legal_moves(player)
+        for first_move in first_moves:
+            from1, to1, second_moves = first_move
+
+            for second_move in second_moves:
+                from2, to2 = second_move[0], second_move[1]
+                for insert_row in b.plate_positions(to2[1]):
+                    for rotate_tile in ([0, 1] if rotatable else [0]):
+                        idx = encode_action((from1, to1), (from2, to2), insert_row, rotate_tile)
+                        valid_actions[idx] = 1
+
         return valid_actions
+
         
     def getGameEnded(self, board, player):
         # return 0 if not ended, 1 if player 1 won, -1 if player 1 lost

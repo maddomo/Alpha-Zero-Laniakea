@@ -28,7 +28,7 @@ args = dotdict({
     'epochs': 10,
     'batch_size': 64,
     'cuda': True,
-    'num_channels': 256,
+    'num_channels': 512,
 })
 
 class NNetWrapper(NeuralNet):
@@ -40,16 +40,30 @@ class NNetWrapper(NeuralNet):
     def train(self, examples):
         input_boards, target_pis, target_vs = list(zip(*examples))
         input_boards = np.asarray(input_boards)
-        target_pis = np.asarray(target_pis)
         target_vs = np.asarray(target_vs)
-        self.nnet.model.fit(x=input_boards, y=[target_pis, target_vs], batch_size=args.batch_size, epochs=args.epochs)
+        print(zip(*target_pis))
+        # target_pis = [(pi1, pi2, pi_insert, pi_rotate), ...]
+        pi1, pi2, pi_insert, pi_rotate = zip(*target_pis)
+
+        pi1 = np.asarray(pi1)
+        pi2 = np.asarray(pi2)
+        pi_insert = np.asarray(pi_insert)
+        pi_rotate = np.asarray(pi_rotate)
+
+        self.nnet.model.fit(
+            x=input_boards,
+            y=[pi1, pi2, pi_insert, pi_rotate, target_vs],
+            batch_size=args.batch_size,
+            epochs=args.epochs
+        )
+
 
     def predict(self, board):
         start = time.time()
         # board shape should be (board_x, board_y, board_c)
         board = board[np.newaxis, :, :, :]  # Add batch dimension with channels
-        pi, v = self.nnet.model.predict(board, verbose=False)
-        return pi[0], v[0]
+        pi1, pi2, pi_insert, pi_rotate, v = self.nnet.model.predict(board, verbose=False)
+        return (pi1[0], pi2[0], pi_insert[0], pi_rotate[0]), v[0]
 
     def save_checkpoint(self, folder='checkpoint', filename='checkpoint.pth.tar'):
         # change extension

@@ -107,35 +107,3 @@ def tensor_to_board(tensor):
 
 
 
-board = Board()
-tensor = board_to_tensor(board,1)
-restored_board = tensor_to_board(tensor)
-print("Original Board:\n", board.board)
-print("Restored Board:\n", restored_board.board)
-
-import random
-for i in range(100):
-    if not board.has_legal_moves(1):
-        print("No legal moves available, breaking loop.")
-        break
-    moves, rotatable = board.get_legal_moves(1)
-    f_move = random.choice(moves)
-    print("Available Moves:", moves[0], "\n")
-    print("First Move:", f_move[0], f_move[1], "\n")
-    first_move = f_move[0], f_move[1]
-    second_stage = f_move[2]
-    s_move = random.choice(second_stage)
-    print("Second Move:", s_move[0], s_move[1], "\n")
-    second_move = s_move[0], s_move[1]
-    insert_row = random.choice(s_move[2])
-    print("Inserted Row:", insert_row, "\n")
-
-    actions = ([first_move, second_move], insert_row, 1)
-    board.execute_move(actions, 1)
-
-    tensor = board_to_tensor(board, 1)
-    restored_board = tensor_to_board(tensor)
-    print("Restored Board:\n", restored_board.board, "\n")
-    #print("Original Board:\n", board.board)
-    #print("Restored Board:\n", restored_board.board)
-    assert np.array_equal(board.board, restored_board.board), "Boards differ!"
