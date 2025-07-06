@@ -36,10 +36,18 @@ class Board():
     # list of all 4 directions on the board, as (x,y) offsets
     __directions = [(1,0),(0,1),(-1,0),(0,-1)]
 
-    def __init__(self):
-        "Set up initial board configuration."
-        # (6 removed from none, as they are added in each row before adding the rest)
-        self.plates = [5, 12, 5]    # two turtles, one turtle, no turtle    
+    def __init__(self, randomize=True):
+        """
+        Initializes the board. If randomize is False, it initializes
+        to an empty or default state without random placements.
+        """ 
+         # (6 plates removed from none, as they are added in each row before adding the rest)
+        self.plates = [5, 12, 5]    # two turtles, one turtle, no turtle
+        if not randomize:
+            self.board = np.zeros((8, 7), dtype=int)
+            return
+        
+        # Randomized setup
         rows = 6
         cols = 8
         board = [[None for _ in range(rows + 1)] for _ in range(cols)]
@@ -276,7 +284,7 @@ class Board():
                     to_stack.append(piece)
                     self.board[x2][y2] = encode_stack(to_stack)
 
-        self.insert_plate_into_row(insert_row, rotate_tile) 
+        self.insert_plate_into_row(insert_row, rotate_tile)
 
 
     def insert_plate_into_row(self, row, rotate):
@@ -327,3 +335,8 @@ class Board():
             self.board[6][row - 6] = insert_plate[1 if rotate == 1 else 0]
             self.board[7][row - 6] = insert_plate[0 if rotate == 1 else 1]
             self.board[4][6] = encode_plate([board_copy[0][row - 6], board_copy[1][row - 6]])
+
+b = Board(False)
+print(b.board)
+b = Board()
+print(b.board)

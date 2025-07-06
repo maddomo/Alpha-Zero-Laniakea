@@ -5,6 +5,7 @@ from Game import Game
 from .LaniakeaLogic import Board
 from .LaniakeaHelper import ACTION_SIZE, decode_action, encode_action
 from .LaniakeaBoardConverter import board_to_tensor, tensor_to_board
+import numpy as np
 
 """
 Game class implementation for the game of TicTacToe.
@@ -48,21 +49,19 @@ class LaniakeaGame(Game):
         return (board_to_tensor(b, -player), -player)
 
     def getValidMoves(self, board, player):
-        # return a fixed size binary vector
         b = tensor_to_board(board)
         valid_moves, rotatable = b.get_legal_moves(player)
-        valid_actions = [0 for _ in range(self.getActionSize())]
+        valid_actions = np.zeros(self.getActionSize(), dtype=np.int8)
+
+        rotations = [0, 1] if rotatable else [0]
+
         for first_move in valid_moves:
             for second_move in first_move[2]:
                 for insert_row in second_move[2]:
-                    if (rotatable == 1):
-                        for rotate_tile in [0, 1]:
-                            i = encode_action((first_move[0], first_move[1]), (second_move[0], second_move[1]), insert_row, rotate_tile)
-                            valid_actions[i] = 1
-                    # If no rotation is possible, just add one action without rotation
-                    else:
-                        i = encode_action((first_move[0], first_move[1]), (second_move[0], second_move[1]), insert_row, 0)
+                    for rotate_tile in rotations:
+                        i = encode_action((first_move[0], first_move[1]), (second_move[0], second_move[1]), insert_row, rotate_tile)
                         valid_actions[i] = 1
+
         return valid_actions
         
     def getGameEnded(self, board, player):
@@ -71,8 +70,10 @@ class LaniakeaGame(Game):
         b = tensor_to_board(board)
 
         if b.is_win(player):
+            print(f"Player {player} wins!")
             return 1
         if b.is_win(-player):
+            print(f"Player {-player} wins!")
             return -1
         if b.has_legal_moves(player):
             return 0

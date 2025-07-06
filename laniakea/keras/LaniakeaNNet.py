@@ -11,7 +11,6 @@ class LaniakeaNNet():
 
         # Neural Network architecture
         self.input_boards = Input(shape=(self.board_x, self.board_y, self.board_c))  # No need to reshape!
-
         x = Conv2D(args.num_channels, 3, padding='same')(self.input_boards)
         x = BatchNormalization(axis=-1)(x)
         x = Activation('relu')(x)
@@ -29,8 +28,8 @@ class LaniakeaNNet():
         x = Activation('relu')(x)
 
         x = Flatten()(x)
-        x = Dropout(args.dropout)(Activation('relu')(BatchNormalization()(Dense(1024)(x))))
-        x = Dropout(args.dropout)(Activation('relu')(BatchNormalization()(Dense(512)(x))))
+        x = Dropout(args.dropout)(Activation('relu')(BatchNormalization()(Dense(256)(x))))
+        x = Dropout(args.dropout)(Activation('relu')(BatchNormalization()(Dense(128)(x))))
 
         self.pi = Dense(self.action_size, activation='softmax', name='pi')(x)  # Policy head
         self.v = Dense(1, activation='tanh', name='v')(x)  # Value head
