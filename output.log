@@ -1,4 +1,32 @@
-nohup: Eingabe wird ignoriert
+2025-07-07 13:38:55.332864: I tensorflow/core/util/util.cc:169] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-07-07 13:38:55 ki5.mni.thm.de __main__[4042566] INFO Loading LaniakeaGame...
+2025-07-07 13:38:55 ki5.mni.thm.de __main__[4042566] INFO Loading NNetWrapper...
+2025-07-07 13:38:56.038462: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2025-07-07 13:38:56.039962: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2025-07-07 13:38:56.045136: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2025-07-07 13:38:56.046344: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2025-07-07 13:38:56.047342: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2025-07-07 13:38:56.048355: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2025-07-07 13:38:56.049559: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX512F AVX512_VNNI AVX512_BF16 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2025-07-07 13:38:56.234695: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2025-07-07 13:38:56.235605: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2025-07-07 13:38:56.236471: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2025-07-07 13:38:56.237290: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2025-07-07 13:38:56.238108: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2025-07-07 13:38:56.238934: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2025-07-07 13:38:56.731593: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2025-07-07 13:38:56.732650: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2025-07-07 13:38:56.733649: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2025-07-07 13:38:56.734492: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2025-07-07 13:38:56.735315: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2025-07-07 13:38:56.736143: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 21985 MB memory:  -> device: 0, name: NVIDIA GeForce RTX 4090, pci bus id: 0000:01:00.0, compute capability: 8.9
+2025-07-07 13:38:56.736398: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2025-07-07 13:38:56.737216: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:1 with 21985 MB memory:  -> device: 1, name: NVIDIA GeForce RTX 4090, pci bus id: 0000:02:00.0, compute capability: 8.9
+2025-07-07 13:38:57 ki5.mni.thm.de __main__[4042566] WARNING Not loading a checkpoint!
+2025-07-07 13:38:57 ki5.mni.thm.de __main__[4042566] INFO Loading the Coach...
+2025-07-07 13:38:57 ki5.mni.thm.de __main__[4042566] INFO Starting the learning process 🎉
+2025-07-07 13:38:57 ki5.mni.thm.de Coach[4042566] INFO Starting Iter #1 ...
 [[0 0 0 0 0 0 0]
  [0 0 0 0 0 0 0]
  [0 0 0 0 0 0 0]
@@ -7,64 +35,13 @@ nohup: Eingabe wird ignoriert
  [0 0 0 0 0 0 0]
  [0 0 0 0 0 0 0]
  [0 0 0 0 0 0 0]]
-[[0 -1 0 0 0 0 8]
- [0 -1 0 0 -1 0 8]
- [0 0 -1 0 -1 0 0]
- [0 -1 -1 0 -1 -1 0]
- [-1 0 0 -1 0 -1 1]
- [-1 0 0 0 0 0 None]
- [0 0 0 0 -1 0 None]
- [0 0 -1 -1 -1 -1 None]]
-2025-07-06 19:25:11.624093: I tensorflow/core/util/util.cc:169] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
-2025-07-06 19:25:12 ki5.mni.thm.de __main__[231610] INFO Loading LaniakeaGame...
-2025-07-06 19:25:12 ki5.mni.thm.de __main__[231610] INFO Loading NNetWrapper...
-2025-07-06 19:25:12.322868: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2025-07-06 19:25:12.324357: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2025-07-06 19:25:12.329503: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2025-07-06 19:25:12.330541: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2025-07-06 19:25:12.331552: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2025-07-06 19:25:12.332549: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2025-07-06 19:25:12.333824: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX512F AVX512_VNNI AVX512_BF16 FMA
-To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2025-07-06 19:25:12.514461: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2025-07-06 19:25:12.515359: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2025-07-06 19:25:12.516314: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2025-07-06 19:25:12.517126: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2025-07-06 19:25:12.517951: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2025-07-06 19:25:12.518762: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2025-07-06 19:25:13.008048: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2025-07-06 19:25:13.009131: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2025-07-06 19:25:13.010108: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2025-07-06 19:25:13.010941: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2025-07-06 19:25:13.011772: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2025-07-06 19:25:13.012599: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 21985 MB memory:  -> device: 0, name: NVIDIA GeForce RTX 4090, pci bus id: 0000:01:00.0, compute capability: 8.9
-2025-07-06 19:25:13.012895: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:975] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2025-07-06 19:25:13.013722: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:1 with 21985 MB memory:  -> device: 1, name: NVIDIA GeForce RTX 4090, pci bus id: 0000:02:00.0, compute capability: 8.9
-2025-07-06 19:25:13 ki5.mni.thm.de __main__[231610] WARNING Not loading a checkpoint!
-2025-07-06 19:25:13 ki5.mni.thm.de __main__[231610] INFO Loading the Coach...
-2025-07-06 19:25:13 ki5.mni.thm.de __main__[231610] INFO Starting the learning process 🎉
-2025-07-06 19:25:13 ki5.mni.thm.de Coach[231610] INFO Starting Iter #1 ...
-Self Play:   0%|          | 0/30 [00:00<?, ?it/s]2025-07-06 19:25:13.882725: I tensorflow/stream_executor/cuda/cuda_dnn.cc:384] Loaded cuDNN version 8100
-2025-07-06 19:25:14.761225: I tensorflow/stream_executor/cuda/cuda_blas.cc:1786] TensorFloat-32 will be used for the matrix multiplication. This will only be logged once.
-Player -1 wins!
-Self Play:   3%|▎         | 1/30 [04:26<2:08:52, 266.62s/it]Player -1 wins!
-Self Play:   7%|▋         | 2/30 [07:49<1:46:57, 229.21s/it]Player -1 wins!
-Self Play:  10%|█         | 3/30 [11:21<1:39:29, 221.10s/it]Player -1 wins!
-Self Play:  13%|█▎        | 4/30 [14:08<1:26:35, 199.84s/it]Player -1 wins!
-Self Play:  17%|█▋        | 5/30 [17:05<1:19:49, 191.59s/it]Player -1 wins!
-Self Play:  20%|██        | 6/30 [20:13<1:16:10, 190.43s/it]Player -1 wins!
-Self Play:  23%|██▎       | 7/30 [23:32<1:14:05, 193.30s/it]Player -1 wins!
-Self Play:  27%|██▋       | 8/30 [25:55<1:05:01, 177.34s/it]Player -1 wins!
-Self Play:  30%|███       | 9/30 [29:59<1:09:19, 198.09s/it]Player -1 wins!
-Self Play:  33%|███▎      | 10/30 [34:24<1:12:53, 218.67s/it]Player -1 wins!
-Self Play:  37%|███▋      | 11/30 [37:51<1:08:08, 215.21s/it]Player -1 wins!
-Self Play:  40%|████      | 12/30 [40:35<59:53, 199.61s/it]  Player -1 wins!
-Self Play:  43%|████▎     | 13/30 [44:25<59:10, 208.84s/it]Player -1 wins!
-Self Play:  47%|████▋     | 14/30 [47:21<53:02, 198.92s/it]2025-07-06 20:16:21 ki5.mni.thm.de MCTS[231610] WARNING Cycle detected: state repeated 6 times. Returning 0.
-Player -1 wins!
-Self Play:  50%|█████     | 15/30 [52:35<58:21, 233.45s/it]Player -1 wins!
-Self Play:  53%|█████▎    | 16/30 [55:44<51:20, 220.05s/it]Player -1 wins!
-Self Play:  57%|█████▋    | 17/30 [58:20<43:29, 200.76s/it]Player -1 wins!
-Self Play:  60%|██████    | 18/30 [1:02:34<43:23, 216.99s/it]Player -1 wins!
-Self Play:  63%|██████▎   | 19/30 [1:06:58<42:22, 231.10s/it]Player -1 wins!
-Self Play:  67%|██████▋   | 20/30 [1:11:11<39:37, 237.75s/it]2025-07-06 20:38:15 ki5.mni.thm.de MCTS[231610] WARNING Cycle detected: state repeated 6 times. Returning 0.
+[[-1 0 0 0 -1 0 8]
+ [0 0 0 -1 -1 0 8]
+ [0 -1 0 0 0 -1 0]
+ [0 -1 -1 0 0 0 0]
+ [0 -1 -1 -1 -1 0 1]
+ [0 0 0 -1 -1 0 None]
+ [-1 -1 0 0 0 0 None]
+ [0 -1 0 0 -1 0 None]]
+Self Play:   0%|          | 0/30 [00:00<?, ?it/s]2025-07-07 13:38:57.620793: I tensorflow/stream_executor/cuda/cuda_dnn.cc:384] Loaded cuDNN version 8100
+2025-07-07 13:38:58.518908: I tensorflow/stream_executor/cuda/cuda_blas.cc:1786] TensorFloat-32 will be used for the matrix multiplication. This will only be logged once.

@@ -3,7 +3,7 @@ import sys
 sys.path.append('..')
 from Game import Game
 from .LaniakeaLogic import Board
-from .LaniakeaHelper import ACTION_SIZE, decode_action, encode_action
+from .LaniakeaHelper import ACTION_SIZE, decode_action, encode_action, decode_stack, mirror_action
 from .LaniakeaBoardConverter import board_to_tensor, tensor_to_board
 import numpy as np
 
@@ -45,7 +45,12 @@ class LaniakeaGame(Game):
         # if player takes action on board, return next (board,player)
         # action must be a valid move
         b = tensor_to_board(board)
-        b.execute_move(decode_action(action), player)
+        decoded_action = decode_action(action)
+        # mirror move if player is -1, due to canonical form bullshit
+        if (player == -1):
+            print(f"Spiegel")
+            decoded_action = mirror_action(decoded_action)
+        b.execute_move(decoded_action, player)
         return (board_to_tensor(b, -player), -player)
 
     def getValidMoves(self, board, player):
@@ -71,9 +76,13 @@ class LaniakeaGame(Game):
 
         if b.is_win(player):
             print(f"Player {player} wins!")
+            print(b.board)
+            print(f"\n Player 1 legal moves{b.has_legal_moves(player)}\nPlayer -1 legal moves{b.has_legal_moves(-player)}\n")
             return 1
         if b.is_win(-player):
             print(f"Player {-player} wins!")
+            print(b.board)
+            print(f"\n Player 1 legal moves{b.has_legal_moves(player)}\nPlayer -1 legal moves{b.has_legal_moves(-player)}\n")
             return -1
         if b.has_legal_moves(player):
             return 0
@@ -83,33 +92,62 @@ class LaniakeaGame(Game):
         if player == 1:
             return board.copy()
         else:
-            board = board.copy()  # Don't modify the original
+            #print(f"Board before flip \n{self.boardToString(board)}")
+            board_copy = board.copy()  # Don't modify the original
 
             # Swap white (2:5) and black (5:8) piece channels
-            white_pieces = board[:, :, 2:5].copy()
-            black_pieces = board[:, :, 5:8].copy()
-            board[:, :, 2:5] = black_pieces
-            board[:, :, 5:8] = white_pieces
+            white_pieces = board_copy[:, :, 2:5].copy()
+            black_pieces = board_copy[:, :, 5:8].copy()
+            board_copy[:, :, 2:5] = black_pieces
+            board_copy[:, :, 5:8] = white_pieces
+
+            board_copy[:, :, 0:8] = np.flip(board_copy[:, :, 0:8], axis=(0, 1))
+
+
 
             # Set player channel to 1 (always from white's perspective)
-            board[:, :, 8] = 1.0
+            board_copy[:, :, 8] = 1.0
 
             # Swap home pieces (channels 9 and 10)
-            white_home = board[:, :, 9].copy()
-            black_home = board[:, :, 10].copy()
-            board[:, :, 9] = black_home
-            board[:, :, 10] = white_home
+            white_home = board_copy[:, :, 9].copy()
+            black_home = board_copy[:, :, 10].copy()
+            board_copy[:, :, 9] = black_home
+            board_copy[:, :, 10] = white_home
 
             # Swap scored pieces (channels 11 and 12)
-            white_score = board[:, :, 11].copy()
-            black_score = board[:, :, 12].copy()
-            board[:, :, 11] = black_score
-            board[:, :, 12] = white_score
-
-            return board
+            white_score = board_copy[:, :, 11].copy()
+            black_score = board_copy[:, :, 12].copy()
+            board_copy[:, :, 11] = black_score
+            board_copy[:, :, 12] = white_score
+            #print(f"Board after flip \n{self.boardToString(board_copy)}")
+            return board_copy
             
     def getSymmetries(self, board, pi):
         return [(board, pi)]  # No symmetries in this game
 
     def stringRepresentation(self, board):
         return board.tobytes()
+    
+    def boardToString(self, board):
+        board = tensor_to_board(board).board
+        board_str = ""
+        board_str += f"Home W: {board[0, 6]}, Home B: {board[1, 6]}, Scored W: {board[2, 6]}, Scored B: {board[3, 6]}\n"
+        for y in range(5, -1, -1):
+            for x in range(8):
+                field = board[x, y]
+                if field == 0:
+                    board_str += " 0 "
+                elif field == -1:
+                    board_str += " X "
+                else:
+                    stack = decode_stack(board[x, y])
+                    for piece in stack:
+                        if piece == 1:
+                            board_str += "W"
+                        else:
+                            board_str += "B"
+                    board_str += "E" * (3 - len(stack))  # Fill with zeros
+                board_str += " "
+            board_str += "\n\n\n"
+        return board_str
+        

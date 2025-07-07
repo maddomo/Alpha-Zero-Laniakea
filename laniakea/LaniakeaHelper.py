@@ -107,6 +107,26 @@ def decode_action(index):
 
     return ((move1, move2), insert_row, rotate)
 
+def mirror_action(action):
+    """
+    Mirror action for player -1
+    """
+    (move1, move2), insert_row, rotate_tile = action
+
+    mirrored_moves = []
+    for move in (move1, move2):
+        move_copy = list(move)  # Umwandlung in veränderbare Liste
+
+        if move[0] != HOME_POS and move[0] != SCORING_POS:
+            move_copy[0] = (7 - move[0][0], 5 - move[0][1])
+
+        if move[1] != HOME_POS and move[1] != SCORING_POS:
+            move_copy[1] = (7 - move[1][0], 5 - move[1][1])
+
+        mirrored_moves.append(tuple(move_copy))  # wieder zurück zu Tuple
+
+    return (tuple(mirrored_moves), 11 - insert_row, rotate_tile)
+
 
 def encode_plate(plate):
     if plate == [-1, -1]:
