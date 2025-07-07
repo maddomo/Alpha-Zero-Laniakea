@@ -136,7 +136,6 @@ class Board():
                 stack.append(color)
                 cloned_board = np.copy(board)
                 cloned_board[player_home][6] -= 1
-                cloned_board = np.copy(board)
                 cloned_board[x][y] = encode_stack(stack)
                 if lastPosition is not None and newPosition is not None:
                     moveList.append(((-1, -1), (x, y), Board.plate_positions(y)))
@@ -256,7 +255,7 @@ class Board():
         into the endzone of the opponent or if the opponent doesn't have any moves left
         @param color (1=white,-1=black)
         """
-        is_in_endzone = self.board[2 + (0 if color == 1 else 1)][6] == 5
+        is_in_endzone = self.board[2 + (0 if color == 1 else 1)][6] == 2
 
         opp_has_moves_left = self.has_legal_moves(-color)
 
@@ -274,6 +273,7 @@ class Board():
             from_pos, to_pos = move[0], move[1]
             if from_pos == (-1,-1):
                 # Move from Home
+            
                 x, y = to_pos
                 stack = decode_stack(self.board[x][y])
                 stack.append(color)
@@ -282,6 +282,7 @@ class Board():
             else:
                 x1, y1 = from_pos
                 x2, y2 = to_pos
+            
 
                 # Remove top piece from stack
                 from_stack = decode_stack(self.board[x1][y1])
@@ -292,17 +293,19 @@ class Board():
                     # Scoring Move
                     #print("SCORED Player", color, "has scored\n")
                     self.board[2 + player_home][6] += 1
-                    return
+                    print(f"Moved piece from ({x1}, {y1}) to scoring area")
+                    print(self.board[2 + player_home][6], "pieces in scoring area")
+                    
                 elif to_pos == (-1,-1):
                     # Back Home
                     self.board[player_home][6] += 1
-                    return
+                    
                 else:
                     # Normal Move
                     to_stack = decode_stack(self.board[x2][y2])
                     to_stack.append(piece)
                     self.board[x2][y2] = encode_stack(to_stack)
-
+                 
         self.insert_plate_into_row(insert_row, rotate_tile)
         #print("Board after move:\n", self.board)
 
@@ -320,6 +323,7 @@ class Board():
                 if self.board[6+i][row] == 0 or self.board[6+i][row] == -1:
                     continue
                 # Return the pieces to the home row when pushing them off the board
+             
                 stack = decode_stack(self.board[6+i][row])
                 
                 for piece in stack:
@@ -336,6 +340,8 @@ class Board():
             self.board[1][row] = insert_plate[0 if rotate == 1 else 1]
             self.board[4][6] = encode_plate([board_copy[6][row], board_copy[7][row]])
 
+
+
         # insert from right
         else:
             row -= 6  # Adjust row for right side insertion
@@ -343,6 +349,7 @@ class Board():
                 if self.board[0+i][row] == 0 or self.board[0+i][row] == -1:
                     continue
                 # Return the pieces to the home row when pushing them off the board
+               
                 stack = decode_stack(self.board[0+i][row])
                 
                 for piece in stack:
@@ -358,3 +365,4 @@ class Board():
             self.board[6][row] = insert_plate[1 if rotate == 1 else 0]
             self.board[7][row] = insert_plate[0 if rotate == 1 else 1]
             self.board[4][6] = encode_plate([board_copy[0][row], board_copy[1][row]])
+            
