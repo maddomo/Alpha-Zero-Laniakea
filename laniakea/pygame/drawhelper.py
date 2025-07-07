@@ -1,15 +1,18 @@
 import pygame
 from ..LaniakeaHelper import decode_stack
 
-BACKGROUND = "#6E97CC"
+BACKGROUND = "#63d14f"
 FOREGROUND = "#FFCF85"
 FOREGROUND_ACCENT_1 = "#E4AB72"
 FOREGROUND_ACCENT_2 = "#BB854E"
 SELECTED_COLOR = "#C2FFFD"
+MOVE_COLOR = "#caa7fc"
 WHITE = "#FFFFFF"
 BLACK = "#000000"
 PIECE_SIZE = 80
 BORDER_SIZE = 2
+rows = 6
+cols = 8
 turtle = None
 
 def init_images():
@@ -48,11 +51,11 @@ def get_laniakea_piece_height():
     return PIECE_SIZE * 1 + BORDER_SIZE * 2
 
 
-# type:
-# 00 -> leer leer
-# 01 -> leer turt
-# ...
-def draw_laniakea_piece(surface, stack_value, location, selected):
+# field_type:
+# 0: false
+# 1: piece selected
+# 2: possible move field
+def draw_laniakea_piece(surface, stack_value, location, field_type):
     global turtle
     x = location[0]
     y = location[1]
@@ -63,18 +66,19 @@ def draw_laniakea_piece(surface, stack_value, location, selected):
     x += BORDER_SIZE
     y += BORDER_SIZE
 
-     # Wenn leer
+     # if empty
     if stack_value == 0:
         pygame.draw.rect(surface, FOREGROUND, (x, y, PIECE_SIZE, PIECE_SIZE))
         return
     
-    # Wenn Turtle
+    # if turtle
     if stack_value == -1:
         surface.blit(turtle, (x, y))
         return
     
-    # HIER den Hintergrund fürs Feld einfügen, bevor der Stack gezeichnet wird
-    if(selected == 1):
+    if(field_type == 1):
+        pygame.draw.rect(surface, SELECTED_COLOR, (x, y, PIECE_SIZE, PIECE_SIZE))
+    elif(field_type == 2):
         pygame.draw.rect(surface, SELECTED_COLOR, (x, y, PIECE_SIZE, PIECE_SIZE))
     else:
         pygame.draw.rect(surface, FOREGROUND, (x, y, PIECE_SIZE, PIECE_SIZE))
@@ -152,5 +156,52 @@ def draw_pieces_in_house(surface, start_x, start_y, width, height, piece_count, 
         # Innenfarbe (piece_color)
         pygame.draw.circle(surface, piece_color, (center_x, center_y), radius - border_width)
 
+def draw_board_helper(screen, board, selected_field, possible_moves, SCREEN_WIDTH):
+    global rows, cols
+    piece_height = get_laniakea_piece_height()
+    piece_width = get_laniakea_piece_width()
+    
+    board_width = piece_width * 8
+    board_height = piece_height * 8
 
+    x = SCREEN_WIDTH / 2 - board_width / 2
+    y = 4
 
+    #background
+    pygame.draw.rect(screen, FOREGROUND_ACCENT_2, (x, y, board_width, board_height))
+
+    # Black house
+    if isinstance(selected_field, tuple) and selected_field == (1,rows):
+        draw_rect_with_border(screen, (x, y, board_width, piece_height * 2), SELECTED_COLOR, FOREGROUND_ACCENT_2, 2)
+    else:
+        draw_rect_with_border(screen, (x, y, board_width, piece_height * 2), FOREGROUND, FOREGROUND_ACCENT_2, 2)
+    # Black pieces in black's home space
+    draw_pieces_in_house(screen, x, y + piece_height, board_width, piece_height, board[1][rows], 3)
+    # White pieces in scoring space
+    draw_pieces_in_house(screen, x, y, board_width, piece_height, board[2][rows], 1)
+
+    y += piece_height * 2
+
+    #laniakea rows
+    for offset_y in range(6):  # 0 → 5 (unten → oben)
+        for offset_x in range(cols):
+            board_y = 5 - offset_y  # Invertiere y, sodass 0 = unten
+            if (selected_field == (offset_x, offset_y)):
+                draw_laniakea_piece(screen, board[offset_x][board_y], (x + offset_x * piece_width, y + offset_y * piece_height), 1)
+            elif ((offset_x, offset_y) in possible_moves):
+                draw_laniakea_piece(screen, board[offset_x][board_y], (x + offset_x * piece_width, y + offset_y * piece_height), 2)
+            else:
+                draw_laniakea_piece(screen, board[offset_x][board_y], (x + offset_x * piece_width, y + offset_y * piece_height), 0)
+
+    
+    y += piece_height * 6
+
+    # White house
+    if isinstance(selected_field, tuple) and selected_field == (0,rows):
+        draw_rect_with_border(screen, (x, y, board_width, piece_height * 2), SELECTED_COLOR, FOREGROUND_ACCENT_2, 2)
+    else:
+        draw_rect_with_border(screen, (x, y, board_width, piece_height * 2), FOREGROUND, FOREGROUND_ACCENT_2, 2)
+    # White pieces in white's home space
+    draw_pieces_in_house(screen, x, y, board_width, piece_height, board[0][rows], 1)
+    # Black pieces in scoring space
+    draw_pieces_in_house(screen, x, y + piece_height, board_width, piece_height, board[3][rows], 3)
