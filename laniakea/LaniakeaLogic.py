@@ -99,7 +99,9 @@ class Board():
         """
         # Return List and 1 if a plate can be rotated, or 0 if not
         rotatable = 1 if self.board[4][6] == 1 else 0
-        return (Board.step_move(self.board, color), rotatable) 
+        moves = Board.step_move(self.board, color)
+        #print(f"Legal moves for player {color}: {moves} \n")
+        return (moves, rotatable)
        
     @staticmethod
     def plate_positions(row):
@@ -156,28 +158,31 @@ class Board():
                     new_x = x + tuple[0] * height
                     new_y = y + tuple[1] * height
 
-                    # Setting new position early for the reversing move check
+
                     if new_x < 0 or new_x >= 8 or new_y < 0 or new_y >= 6:
                         # Signaling, that the last move was move to the home row
-                        new_x = -1
-                        new_y = -1
-                    # Skip if move reverses the last move
-                    if (lastPosition is not None and newPosition is not None):
-                        if (x, y) == newPosition and (new_x, new_y) == lastPosition:
-                            continue
+                        if (lastPosition is not None and newPosition is not None):
+                            if (x, y) == newPosition and (-1, -1) == lastPosition:
+                                continue
+                    else:
+                        if (lastPosition is not None and newPosition is not None):
+                            if (x, y) == newPosition and (new_x, new_y) == lastPosition:
+                                continue
 
                     # Out of bounds left or right
                     if new_x < 0 or new_x >= 8:
+                        new_x = -1
+                        new_y = -1
                         from_stack_copy.pop()
                         cloned_board = np.copy(board)
                         cloned_board[x][y] = encode_stack(from_stack_copy)
                         cloned_board[player_home][6] += 1
                         if lastPosition is not None and newPosition is not None:
-                            moveList.append(((x, y), (new_x, new_y), Board.plate_positions(y)))
+                            moveList.append(((x, y), (new_x, new_y), Board.plate_positions(new_y)))
                         else:
                             moveList.append(((x, y), (new_x, new_y), Board.step_move(cloned_board, color, (x, y), (new_x, new_y))))
                         continue
-                    
+
                     # Scoring move
                     if (color == 1 and new_y >= 6) or (color == -1 and new_y < 0):
                         # Signaling, that the last move was a scoring move
@@ -187,23 +192,31 @@ class Board():
                         cloned_board = np.copy(board)
                         cloned_board[x][y] = encode_stack(from_stack_copy)
                         cloned_board[2 + player_home][6] += 1
+                        #print(f"lastPosition {lastPosition}, newPosition {newPosition} \n")
                         if lastPosition is not None and newPosition is not None:
-                            moveList.append(((x, y), (new_x, new_y), Board.plate_positions(y)))
+                            #print("Second move \n")
+                            moveList.append(((x, y), (new_x, new_y), Board.plate_positions(new_y)))
                         else:
                             # Check if a second move is possible
+                            # if the game would be won after the first move, but no second move is possible, it would not get returned :(
+                            # not including this, because we would need to rewrite everything
+                            #print("First move \n")
                             second_moves = Board.step_move(cloned_board, color, (x, y), (new_x, new_y))
                             if any(second_moves):
+                                #print("Adding second moves \n")
                                 moveList.append(((x, y), (new_x, new_y), second_moves))
                         continue
 
                     # Back to home
                     if (color == -1 and new_y >= 6) or (color == 1 and new_y < 0):
+                        new_x = -1
+                        new_y = -1
                         from_stack_copy.pop()
                         cloned_board = np.copy(board)
                         cloned_board[x][y] = encode_stack(from_stack_copy)
                         cloned_board[0 + player_home][6] += 1
                         if lastPosition is not None and newPosition is not None:
-                            moveList.append(((x, y), (new_x, new_y), Board.plate_positions(y)))
+                            moveList.append(((x, y), (new_x, new_y), Board.plate_positions(new_y)))
                         else:
                             # Check if a second move is possible
                             second_moves = Board.step_move(cloned_board, color, (x, y), (new_x, new_y))
@@ -221,7 +234,7 @@ class Board():
                     cloned_board[x][y] = encode_stack(from_stack_copy)
                     cloned_board[new_x][new_y] = encode_stack(to_stack)
                     if lastPosition is not None and newPosition is not None:
-                        moveList.append(((x, y), (new_x, new_y), Board.plate_positions(y)))
+                        moveList.append(((x, y), (new_x, new_y), Board.plate_positions(new_y)))
                     else:
                         # Check if a second move is possible
                         second_moves = Board.step_move(cloned_board, color, (x, y), (new_x, new_y))
@@ -253,9 +266,10 @@ class Board():
         """Perform the given move on the board; 
         color gives the color pf the piece to play (1=white,-1=black)
         """
+        #print(f"Executing move for player {color} with actions: {actions}")
+        #print("Board before move:\n", self.board)
         moves, insert_row, rotate_tile = actions
         player_home = 0 if color == 1 else 1
-
         for move in moves:
             from_pos, to_pos = move[0], move[1]
             if from_pos == (-1,-1):
@@ -276,8 +290,8 @@ class Board():
 
                 if to_pos == (-2,-2):
                     # Scoring Move
-                    print(f"SCORED Player {color} has scored\n")
-                    self.board[2 + (player_home)][6] += 1
+                    #print("SCORED Player", color, "has scored\n")
+                    self.board[2 + player_home][6] += 1
                     return
                 elif to_pos == (-1,-1):
                     # Back Home
@@ -290,6 +304,7 @@ class Board():
                     self.board[x2][y2] = encode_stack(to_stack)
 
         self.insert_plate_into_row(insert_row, rotate_tile)
+        #print("Board after move:\n", self.board)
 
 
     def insert_plate_into_row(self, row, rotate):

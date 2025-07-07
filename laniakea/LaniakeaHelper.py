@@ -55,11 +55,12 @@ for x in range(8):
     ALL_MOVES.append((HOME_POS, (x, 0)))  # Weiß
     ALL_MOVES.append((HOME_POS, (x, 5)))  # Schwarz
 
+# Scoring-Moves for black from 3 rows
 for x in range(8):
     for i in range(3):
         ALL_MOVES.append(((x, i), SCORING_POS))
 
-# Für Schwarz ist Endzone unterhalb des Boards (y >= 6)
+# Scoring-Moves for white from 3 rows
 for x in range(8):
     for i in range(3):
         ALL_MOVES.append(((x, 5 - i), SCORING_POS))
@@ -77,7 +78,8 @@ ACTION_SIZE = MAX_MOVES * MAX_MOVES * INSERT_ROWS * ROTATE_OPTIONS
 MOVE_TO_ID = {m: i for i, m in enumerate(ALL_MOVES)}
 ID_TO_MOVE = {i: m for m, i in MOVE_TO_ID.items()}
 #print(f"Total Moves: {len(ALL_MOVES)}")
-#print(MOVE_TO_ID)
+#print(MOVE_TO_ID,"\n")
+#print(ID_TO_MOVE,"\n")
 
 # ------------------------------------------------
 # Encode to single index
@@ -88,7 +90,6 @@ def encode_action(move1, move2, insert_row, rotate_tile):
     """
     id1 = MOVE_TO_ID[move1]
     id2 = MOVE_TO_ID[move2]
-
     return (((id1 * MAX_MOVES + id2) * INSERT_ROWS) + insert_row) * ROTATE_OPTIONS + rotate_tile
 
 # ------------------------------------------------

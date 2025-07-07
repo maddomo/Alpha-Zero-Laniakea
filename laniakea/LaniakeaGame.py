@@ -48,7 +48,7 @@ class LaniakeaGame(Game):
         decoded_action = decode_action(action)
         # mirror move if player is -1, due to canonical form bullshit
         if (player == -1):
-            print(f"Spiegel")
+            #print(f"Spiegel")
             decoded_action = mirror_action(decoded_action)
         b.execute_move(decoded_action, player)
         return (board_to_tensor(b, -player), -player)
