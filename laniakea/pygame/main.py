@@ -26,10 +26,10 @@ SELECTED_COLOR = "#C2FFFD"
 screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 dh.init_images()
 board = Board(False)
-board[3][2] = 1
+board[3][2] = 305
 board[4][2] = 1
+board[0][6] = 1
 board[0][0] = -1
-
 
 selected_field = None
 possible_moves = []
