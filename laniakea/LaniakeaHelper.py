@@ -80,7 +80,6 @@ ID_TO_MOVE = {i: m for m, i in MOVE_TO_ID.items()}
 #print(f"Total Moves: {len(ALL_MOVES)}")
 #print(MOVE_TO_ID,"\n")
 #print(ID_TO_MOVE,"\n")
-print(ACTION_SIZE, "Actions in total")
 
 # ------------------------------------------------
 # Encode to single index

@@ -72,14 +72,14 @@ class LaniakeaGame(Game):
         b = tensor_to_board(board)
 
         if b.is_win(player):
-            print(f"Player {player} wins!")
-            print(b.board)
-            print(f"\n Player 1 legal moves{b.has_legal_moves(player)}\nPlayer -1 legal moves{b.has_legal_moves(-player)}\n")
+            #print(f"Player {player} wins!")
+           # print(b.board)
+           # print(f"\n Player 1 legal moves{b.has_legal_moves(player)}\nPlayer -1 legal moves{b.has_legal_moves(-player)}\n")
             return 1
         if b.is_win(-player):
-            print(f"Player {-player} wins!")
-            print(b.board)
-            print(f"\n Player 1 legal moves{b.has_legal_moves(player)}\nPlayer -1 legal moves{b.has_legal_moves(-player)}\n")
+            #print(f"Player {-player} wins!")
+            #print(b.board)
+            #print(f"\n Player 1 legal moves{b.has_legal_moves(player)}\nPlayer -1 legal moves{b.has_legal_moves(-player)}\n")
             return -1
         if b.has_legal_moves(player):
             return 0

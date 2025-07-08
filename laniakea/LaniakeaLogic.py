@@ -293,8 +293,8 @@ class Board():
                     # Scoring Move
                     #print("SCORED Player", color, "has scored\n")
                     self.board[2 + player_home][6] += 1
-                    print(f"Moved piece from ({x1}, {y1}) to scoring area")
-                    print(self.board[2 + player_home][6], "pieces in scoring area")
+                    #print(f"Moved piece from ({x1}, {y1}) to scoring area")
+                    #print(self.board[2 + player_home][6], "pieces in scoring area")
                     
                 elif to_pos == (-1,-1):
                     # Back Home
