@@ -28,8 +28,8 @@ class LaniakeaNNet():
         x = Activation('relu')(x)
 
         x = Flatten()(x)
-        x = Dropout(args.dropout)(Activation('relu')(BatchNormalization()(Dense(256)(x))))
-        x = Dropout(args.dropout)(Activation('relu')(BatchNormalization()(Dense(128)(x))))
+        x = Dropout(args.dropout)(Activation('relu')(BatchNormalization()(Dense(200)(x))))
+        x = Dropout(args.dropout)(Activation('relu')(BatchNormalization()(Dense(100)(x))))
 
         self.pi = Dense(self.action_size, activation='softmax', name='pi')(x)  # Policy head
         self.v = Dense(1, activation='tanh', name='v')(x)  # Value head
