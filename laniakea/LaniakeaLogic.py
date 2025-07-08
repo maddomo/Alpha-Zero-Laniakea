@@ -165,9 +165,9 @@ class Board():
                         if (lastPosition is not None and newPosition is not None):
                             if (x, y) == newPosition and (new_x, new_y) == lastPosition:
                                 continue
-                        
                         if board[new_x][new_y] == -1: 
                             continue #Cannot bemoved on Turtle
+                            
                     # Out of bounds left or right
                     if new_x < 0 or new_x >= 8:
                         new_x = -1
