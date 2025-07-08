@@ -96,12 +96,10 @@ class Board():
     def get_legal_moves(self, color):
         """Returns all the legal moves for the given color.
         (1 for white, -1 for black)       
-        """
-        # Return List and 1 if a plate can be rotated, or 0 if not
-        rotatable = 1 if self.board[4][6] == 1 else 0
+        """      
         moves = Board.step_move(self.board, color)
         #print(f"Legal moves for player {color}: {moves} \n")
-        return (moves, rotatable)
+        return moves
        
     @staticmethod
     def plate_positions(row):
@@ -257,7 +255,7 @@ class Board():
         into the endzone of the opponent or if the opponent doesn't have any moves left
         @param color (1=white,-1=black)
         """
-        is_in_endzone = self.board[2 + (0 if color == 1 else 1)][6] == 2
+        is_in_endzone = self.board[2 + (0 if color == 1 else 1)][6] == 5
 
         opp_has_moves_left = self.has_legal_moves(-color)
 
@@ -269,7 +267,7 @@ class Board():
         """
         #print(f"Executing move for player {color} with actions: {actions}")
         #print("Board before move:\n", self.board)
-        moves, insert_row, rotate_tile = actions
+        moves, insert_row = actions
         player_home = 0 if color == 1 else 1
         for move in moves:
             from_pos, to_pos = move[0], move[1]
@@ -308,11 +306,11 @@ class Board():
                     to_stack.append(piece)
                     self.board[x2][y2] = encode_stack(to_stack)
                  
-        self.insert_plate_into_row(insert_row, rotate_tile)
+        self.insert_plate_into_row(insert_row)
         #print("Board after move:\n", self.board)
 
 
-    def insert_plate_into_row(self, row, rotate):
+    def insert_plate_into_row(self, row):
         """Insert a plate into the row at the given position.
         row <= 5 indicates the row is inserted from the left side.   -> 0000
         row > 5 indicates the row is inserted from the right side.      0000 <-
@@ -338,8 +336,8 @@ class Board():
             for i in range(2, 8):
                 self.board[i][row] = board_copy[i - 2][row]
             insert_plate = decode_plate(self.board[4][6])
-            self.board[0][row] = insert_plate[1 if rotate == 1 else 0]
-            self.board[1][row] = insert_plate[0 if rotate == 1 else 1]
+            self.board[0][row] = insert_plate[0]
+            self.board[1][row] = insert_plate[1]
             self.board[4][6] = encode_plate([board_copy[6][row], board_copy[7][row]])
 
 
@@ -364,7 +362,7 @@ class Board():
             for i in range(0, 6):
                 self.board[i][row] = board_copy[i + 2][row]
             insert_plate = decode_plate(self.board[4][6])
-            self.board[6][row] = insert_plate[1 if rotate == 1 else 0]
-            self.board[7][row] = insert_plate[0 if rotate == 1 else 1]
+            self.board[6][row] = insert_plate[0]
+            self.board[7][row] = insert_plate[1]
             self.board[4][6] = encode_plate([board_copy[0][row], board_copy[1][row]])
             
