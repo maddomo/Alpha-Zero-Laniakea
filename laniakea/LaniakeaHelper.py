@@ -74,7 +74,7 @@ for move in ALL_MOVES:
 ALL_MOVES = unique_moves
 
 MAX_MOVES = len(ALL_MOVES)
-ACTION_SIZE = MAX_MOVES * MAX_MOVES * INSERT_ROWS * ROTATE_OPTIONS
+ACTION_SIZE = MAX_MOVES * MAX_MOVES * INSERT_ROWS 
 MOVE_TO_ID = {m: i for i, m in enumerate(ALL_MOVES)}
 ID_TO_MOVE = {i: m for m, i in MOVE_TO_ID.items()}
 #print(f"Total Moves: {len(ALL_MOVES)}")
@@ -84,13 +84,13 @@ ID_TO_MOVE = {i: m for m, i in MOVE_TO_ID.items()}
 # ------------------------------------------------
 # Encode to single index
 # ------------------------------------------------
-def encode_action(move1, move2, insert_row, rotate_tile):
+def encode_action(move1, move2, insert_row):
     """
     Encode: ((move1, move2?), insert_row, rotate) → single int index
     """
     id1 = MOVE_TO_ID[move1]
     id2 = MOVE_TO_ID[move2]
-    return (((id1 * MAX_MOVES + id2) * INSERT_ROWS) + insert_row) * ROTATE_OPTIONS + rotate_tile
+    return ((id1 * MAX_MOVES + id2) * INSERT_ROWS) + insert_row
 
 # ------------------------------------------------
 # Decode from index
@@ -99,20 +99,20 @@ def decode_action(index):
     """
     Decode: int index → ((move1, move2), insert_row, rotate_tile)
     """
-    pair, rotate = divmod(index, ROTATE_OPTIONS)
-    pair_row, insert_row = divmod(pair, INSERT_ROWS)
+   
+    pair_row, insert_row = divmod(index, INSERT_ROWS)
     id1, id2 = divmod(pair_row, MAX_MOVES)
 
     move1 = ID_TO_MOVE[id1]
     move2 = ID_TO_MOVE[id2]
 
-    return ((move1, move2), insert_row, rotate)
+    return ((move1, move2), insert_row)
 
 def mirror_action(action):
     """
     Mirror action for player -1
     """
-    (move1, move2), insert_row, rotate_tile = action
+    (move1, move2), insert_row = action
 
     mirrored_moves = []
     for move in (move1, move2):
@@ -126,16 +126,18 @@ def mirror_action(action):
 
         mirrored_moves.append(tuple(move_copy))  # wieder zurück zu Tuple
 
-    return (tuple(mirrored_moves), 11 - insert_row, rotate_tile)
+    return (tuple(mirrored_moves), 11 - insert_row)
 
 
 def encode_plate(plate):
     if plate == [-1, -1]:
         return 0
-    elif plate in [[-1, 0], [0, -1]]:
+    elif plate == [-1, 0]:
         return 1
     elif plate == [0, 0]:
         return 2
+    elif plate == [0, -1]:
+        return 3
     else:
         raise ValueError("Invalid plate encoding: {}".format(plate))
 
@@ -146,5 +148,7 @@ def decode_plate(index):
         return [-1, 0]
     elif index == 2:
         return [0, 0]
+    elif index == 3:
+        return [0, -1]
     else:
         raise ValueError("Invalid plate decoding: {}".format(index))

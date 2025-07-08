@@ -26,9 +26,9 @@ args = dotdict({
     'lr': 0.001,
     'dropout': 0.3,
     'epochs': 10,
-    'batch_size': 64,
+    'batch_size': 8,
     'cuda': True,
-    'num_channels': 512,
+    'num_channels': 128,
 })
 
 class NNetWrapper(NeuralNet):
@@ -40,9 +40,14 @@ class NNetWrapper(NeuralNet):
     def train(self, examples):
         input_boards, target_pis, target_vs = list(zip(*examples))
         input_boards = np.asarray(input_boards)
-        target_pis = np.asarray(target_pis)
+            # 🎯 Sparse → Full-Vector-Wandlung
+        full_pis = np.zeros((len(target_pis), self.action_size), dtype=np.float32)
+        for i, sparse in enumerate(target_pis):
+            for index, prob in sparse:
+                full_pis[i][index] = prob
+
         target_vs = np.asarray(target_vs)
-        self.nnet.model.fit(x=input_boards, y=[target_pis, target_vs], batch_size=args.batch_size, epochs=args.epochs)
+        self.nnet.model.fit(x=input_boards, y=[full_pis, target_vs], batch_size=args.batch_size, epochs=args.epochs)
 
     def predict(self, board):
         start = time.time()

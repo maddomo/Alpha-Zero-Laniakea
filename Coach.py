@@ -52,13 +52,19 @@ class Coach():
 
         while True:
             episodeStep += 1
+            if episodeStep >= 500:
+                print(f"Abbruch: Episode überschreitet 500 Züge – vermutlich kein Ende erreichbar.")
+                return []
             canonicalBoard = self.game.getCanonicalForm(board, self.curPlayer)
             temp = int(episodeStep < self.args.tempThreshold)
 
+
             pi = self.mcts.getActionProb(canonicalBoard, temp=temp)
+
             sym = self.game.getSymmetries(canonicalBoard, pi)
             for b, p in sym:
-                trainExamples.append([b, self.curPlayer, p, None])
+                p_sparse = [(i, float(v)) for i, v in enumerate(p) if v > 1e-6]
+                trainExamples.append([b, self.curPlayer, p_sparse, None])
 
             action = np.random.choice(len(pi), p=pi)
             board, self.curPlayer = self.game.getNextState(board, self.curPlayer, action)

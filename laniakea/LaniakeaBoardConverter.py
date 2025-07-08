@@ -17,7 +17,7 @@ from .LaniakeaLogic import Board
 #   - 3 channels for the insertable tile type (0, 1, or 2)
 
 def board_to_tensor(board, player):
-    tensor = np.zeros((8, 6, 16), dtype=np.float32)
+    tensor = np.zeros((8, 6, 17), dtype=np.float16)
     board = board.board
     rows = 6
     cols = 8
@@ -94,7 +94,7 @@ def tensor_to_board(tensor):
 
     # Insert plate logic
     insert_plate = -1
-    for i in range(13,16):
+    for i in range(13,17):
         if tensor[0][0][i] == 1:
             insert_plate = i-13
             break

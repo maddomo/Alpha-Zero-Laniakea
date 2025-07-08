@@ -34,12 +34,12 @@ class LaniakeaGame(Game):
         # ideas to try if AI performs poorly:
         # (5 * total dims for board history)
         # (1 Dim for movable pieces)
-        return (8, 6, 16)
+        return (8, 6, 17)
 
     def getActionSize(self):
         # return number of actions
         # 8*6 Board, 4 Directions, 8 possible moves from home area, 12 possible inserts, 2 rotations
-        return ACTION_SIZE
+        return ACTION_SIZE 
 
     def getNextState(self, board, player, action):
         # if player takes action on board, return next (board,player)
@@ -55,17 +55,14 @@ class LaniakeaGame(Game):
 
     def getValidMoves(self, board, player):
         b = tensor_to_board(board)
-        valid_moves, rotatable = b.get_legal_moves(player)
+        valid_moves = b.get_legal_moves(player)
         valid_actions = np.zeros(self.getActionSize(), dtype=np.int8)
-
-        rotations = [0, 1] if rotatable else [0]
 
         for first_move in valid_moves:
             for second_move in first_move[2]:
-                for insert_row in second_move[2]:
-                    for rotate_tile in rotations:
-                        i = encode_action((first_move[0], first_move[1]), (second_move[0], second_move[1]), insert_row, rotate_tile)
-                        valid_actions[i] = 1
+                for insert_row in second_move[2]: 
+                    i = encode_action((first_move[0], first_move[1]), (second_move[0], second_move[1]), insert_row)
+                    valid_actions[i] = 1
 
         return valid_actions
         
@@ -75,14 +72,14 @@ class LaniakeaGame(Game):
         b = tensor_to_board(board)
 
         if b.is_win(player):
-            print(f"Player {player} wins!")
-            print(b.board)
-            print(f"\n Player 1 legal moves{b.has_legal_moves(player)}\nPlayer -1 legal moves{b.has_legal_moves(-player)}\n")
+            #print(f"Player {player} wins!")
+           # print(b.board)
+           # print(f"\n Player 1 legal moves{b.has_legal_moves(player)}\nPlayer -1 legal moves{b.has_legal_moves(-player)}\n")
             return 1
         if b.is_win(-player):
-            print(f"Player {-player} wins!")
-            print(b.board)
-            print(f"\n Player 1 legal moves{b.has_legal_moves(player)}\nPlayer -1 legal moves{b.has_legal_moves(-player)}\n")
+            #print(f"Player {-player} wins!")
+            #print(b.board)
+            #print(f"\n Player 1 legal moves{b.has_legal_moves(player)}\nPlayer -1 legal moves{b.has_legal_moves(-player)}\n")
             return -1
         if b.has_legal_moves(player):
             return 0
