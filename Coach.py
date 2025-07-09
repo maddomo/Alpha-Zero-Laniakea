@@ -52,9 +52,10 @@ class Coach():
 
         while True:
             episodeStep += 1
+            #Bei über 500 Zügen brechen wir wegen dem Arbeitsspeicher ab, es wird dann ein schlechtes ergebnis returnt.
             if episodeStep >= 500:
-                print(f"Abbruch: Episode überschreitet 500 Züge – vermutlich kein Ende erreichbar.")
-                return []
+                print(f"Abbruch: Episode überschreitet 500 Züge – vermutlich kein Ende erreichbar, schlechtes ergebnis returnen.")
+                return [(x[0], x[2], -1 * ((-1) ** (x[1] != self.curPlayer))) for x in trainExamples]
             canonicalBoard = self.game.getCanonicalForm(board, self.curPlayer)
             temp = int(episodeStep < self.args.tempThreshold)
 
