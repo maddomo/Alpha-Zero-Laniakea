@@ -103,6 +103,9 @@ def decode_action(index):
     pair_row, insert_row = divmod(index, INSERT_ROWS)
     id1, id2 = divmod(pair_row, MAX_MOVES)
 
+    if(id1 < 0 or id2 < 0):
+        raise ValueError(f"Invalid action index: {index}. id1: {id1}, id2: {id2}")
+
     move1 = ID_TO_MOVE[id1]
     move2 = ID_TO_MOVE[id2]
 

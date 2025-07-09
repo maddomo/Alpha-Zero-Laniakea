@@ -6,7 +6,7 @@ from .LaniakeaLogic import Board
 # The tensor has the shape (8, 6, 16):
 # - 8 columns (x-axis)
 # - 6 rows (y-axis)
-# - 16 channels:
+# - 17 channels:
 #   - 1 channel for turtle
 #   - 1 channel for empty fields
 #   - 3 channels for white pieces (bottom to top)
@@ -14,7 +14,7 @@ from .LaniakeaLogic import Board
 #   - 1 channel for player turn (1 if white, 0 if black)
 #   - 2 channels for home pieces (white and black)
 #   - 2 channels for scored pieces (white and black)
-#   - 3 channels for the insertable tile type (0, 1, or 2)
+#   - 4 channels for the insertable tile type (0, 1, or 2, 3)
 
 def board_to_tensor(board, player):
     tensor = np.zeros((8, 6, 17), dtype=np.float16)

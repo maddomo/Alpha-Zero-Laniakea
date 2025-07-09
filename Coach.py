@@ -68,7 +68,7 @@ class Coach():
 
             action = np.random.choice(len(pi), p=pi)
             board, self.curPlayer = self.game.getNextState(board, self.curPlayer, action)
-            print(f"Episode step {episodeStep} for player {self.curPlayer} with action {action} with board:\n{self.game.boardToString(board)}")
+            #print(f"Episode step {episodeStep} for player {self.curPlayer} with action {action} with board:\n{self.game.boardToString(board)}")
             r = self.game.getGameEnded(board, self.curPlayer)
 
             if r != 0:
@@ -117,6 +117,14 @@ class Coach():
             pmcts = MCTS(self.game, self.pnet, self.args)
 
             self.nnet.train(trainExamples)
+            #Nur fürs aller erste training, damit wir mal eine haben
+            if(i <= 1):
+                log.info(f"Auto-accepting model in early iteration {i}")
+                self.nnet.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
+                self.nnet.save_checkpoint(folder=self.args.checkpoint, filename='best.pth.tar')
+                continue
+
+            pmcts = MCTS(self.game, self.pnet, self.args)
             nmcts = MCTS(self.game, self.nnet, self.args)
 
             log.info('PITTING AGAINST PREVIOUS VERSION')

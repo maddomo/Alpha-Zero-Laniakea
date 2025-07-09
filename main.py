@@ -6,15 +6,7 @@ from Coach import Coach
 from laniakea.LaniakeaGame import LaniakeaGame as Game
 from laniakea.keras.NNet import NNetWrapper as nn
 from utils import *
-import tensorflow as tf
 
-gpus = tf.config.list_physical_devices('GPU')
-if gpus:
-    try:
-        for gpu in gpus:
-            tf.config.experimental.set_memory_growth(gpu, True)
-    except RuntimeError as e:
-        print(e)
 
 log = logging.getLogger(__name__)
 
@@ -22,12 +14,12 @@ coloredlogs.install(level='INFO')  # Change this to DEBUG to see more info.
 
 args = dotdict({
     'numIters': 2, 
-    'numEps': 5,              # Number of complete self-play games to simulate during a new iteration.
+    'numEps': 15,              # Number of complete self-play games to simulate during a new iteration.
     'tempThreshold': 5,        #
     'updateThreshold': 0.6,     # During arena playoff, new neural net will be accepted if threshold or more of games are won.
-    'maxlenOfQueue': 20000,    # Number of game examples to train the neural networks.
-    'numMCTSSims': 8,          # Number of games moves for MCTS to simulate.
-    'arenaCompare': 9,         # Number of games to play during arena play to determine if new net will be accepted.
+    'maxlenOfQueue': 10000,    # Number of game examples to train the neural networks.
+    'numMCTSSims': 15,          # Number of games moves for MCTS to simulate.
+    'arenaCompare': 5,         # Number of games to play during arena play to determine if new net will be accepted.
     'cpuct': 1,
 
     'checkpoint': './temp/',

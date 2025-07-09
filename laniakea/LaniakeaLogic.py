@@ -255,7 +255,7 @@ class Board():
         into the endzone of the opponent or if the opponent doesn't have any moves left
         @param color (1=white,-1=black)
         """
-        is_in_endzone = self.board[2 + (0 if color == 1 else 1)][6] == 3
+        is_in_endzone = self.board[2 + (0 if color == 1 else 1)][6] == 2
 
         opp_has_moves_left = self.has_legal_moves(-color)
 
