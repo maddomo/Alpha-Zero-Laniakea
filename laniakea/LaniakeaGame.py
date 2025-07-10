@@ -44,14 +44,23 @@ class LaniakeaGame(Game):
 
     def getNextState(self, board, player, action):
         b = tensor_to_board(board)  
+
         if action == -1:
-            action = random.choice(self.getValidMoves(board, player))
-            print(f"Random action chosen: {action}")
+            random_move = random.choice(b.get_legal_moves(player))
+            from_pos, to_pos, insert_rows = random_move
+            if(len(insert_rows) > 0):
+                insert_row = random.choice(insert_rows)
+            else:
+                insert_row = 12 # setze 12 falls nicht da
+
+            decoded_action = ((from_pos, to_pos), insert_row)
+            
         # if player takes action on board, return next (board,player)
         # action must be a valid move
-        
-        decoded_action = decode_action(action)
-        # mirror move if player is -1, due to canonical form bullshit
+        else:
+            decoded_action = decode_action(action)
+            print(f" move chosen: {decoded_action} for player {player}")
+
         if (player == -1):
             #print(f"Spiegel")
             decoded_action = mirror_action(decoded_action)
@@ -65,9 +74,13 @@ class LaniakeaGame(Game):
 
         for move in valid_moves:
             from_pos, to_pos, insert_rows = move  # Neu: Nur ein Move + Liste an Insert-Zeilen
-            for insert_row in insert_rows:
-                index = encode_action((from_pos, to_pos), insert_row)
+            if(len(insert_rows) == 0):
+                index = encode_action((from_pos, to_pos), 12)
                 valid_actions[index] = 1
+            else:
+                for insert_row in insert_rows:
+                    index = encode_action((from_pos, to_pos), insert_row)
+                    valid_actions[index] = 1
 
         return valid_actions
 

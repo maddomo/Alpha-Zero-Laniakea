@@ -215,15 +215,7 @@ class Board():
             # Entferne oberstes Element vom Stack am Startfeld
             from_stack = decode_stack(self.board[x1][y1])
         
-            if len(from_stack) == 0:
-                print("❗FEHLER: Versuche, von leerem Stack zu ziehen!")
-                print(f"Feld: ({x1}, {y1})")
-                print(f"Inhalt: {self.board[x1][y1]}")
-                print(f"decoded: {from_stack}")
-                print(f"Aktion: from {from_pos} to {to_pos}, Spieler: {color}")
-                print(f"Legale Züge: {self.get_legal_moves(color)}")
-                print(f"Letzter Zug: {self.lastMove}")
-                raise Exception("Ungültiger Zug: Leerer Stack")
+            
             piece = from_stack.pop()
             self.board[x1][y1] = encode_stack(from_stack)
 
@@ -239,9 +231,11 @@ class Board():
                 to_stack.append(piece)
                 self.board[x2][y2] = encode_stack(to_stack)
 
-        # Einschüben nach dem Zug
-        self.insert_plate_into_row(insert_row)
         self.lastMove = (from_pos, to_pos)
+        # Einschüben nach dem Zug
+        if(insert_row < 12):
+            self.insert_plate_into_row(insert_row)
+        
         
 
 
