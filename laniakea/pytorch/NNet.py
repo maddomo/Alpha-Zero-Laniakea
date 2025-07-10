@@ -135,5 +135,5 @@ class NNetWrapper(NeuralNet):
         if not os.path.exists(path):
             raise FileNotFoundError(f"No model in path {path}")
         map_loc = None if args.cuda else "cpu"
-        chkpt = torch.load(path, map_location=map_loc)
+        chkpt = torch.load(path, map_location=map_loc, weights_only=True)
         self.nnet.load_state_dict(chkpt["state_dict"])
