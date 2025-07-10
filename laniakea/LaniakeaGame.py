@@ -4,8 +4,8 @@ sys.path.append('..')
 from Game import Game
 from .LaniakeaLogic import Board
 from .LaniakeaHelper import ACTION_SIZE, decode_action, encode_action, decode_stack, mirror_action
-from .LaniakeaBoardConverter import board_to_tensor, tensor_to_board
 import numpy as np
+import random
 
 """
 Game class implementation for the game of TicTacToe.
@@ -20,41 +20,41 @@ class LaniakeaGame(Game):
 
     def getInitBoard(self):
         # return initial board (numpy board)
-        return board_to_tensor(Board(), 1)
+        return Board().board
 
     def getBoardSize(self):
         # Tensor dimension
         # 1 Dim for turtles
         # 1 Dim for empty spaces
-        # 6 Dims for piece stacks (2 colors * 3 height)
-        # 1 Dim Player turn
+        # 3 Dims for piece stacks (1/-1 * 3 height)
         # 2 Dim for amount of home pieces black/white
         # 2 Dim for "scored" pieces 
-        # 3 Dims for free tile
-        # ideas to try if AI performs poorly:
-        # (5 * total dims for board history)
-        # (1 Dim for movable pieces)
-        return (8, 6, 17)
+        # 4 Dims for free tile
+        return (8, 6, 13)
 
     def getActionSize(self):
         # return number of actions
-        # 8*6 Board, 4 Directions, 8 possible moves from home area, 12 possible inserts, 2 rotations
         return ACTION_SIZE 
 
     def getNextState(self, board, player, action):
         # if player takes action on board, return next (board,player)
         # action must be a valid move
-        b = tensor_to_board(board)
+        b = Board(False)
+        b.board = board
+        # Pick a random action if action is not found
+        if action == -1:
+            action = random.choice(self.getValidMoves(board, player))
         decoded_action = decode_action(action)
-        # mirror move if player is -1, due to canonical form bullshit
+        # mirror move if player is -1, due to canonical form
         if (player == -1):
             #print(f"Spiegel")
             decoded_action = mirror_action(decoded_action)
         b.execute_move(decoded_action, player)
-        return (board_to_tensor(b, -player), -player)
+        return (b.board, -player)
 
     def getValidMoves(self, board, player):
-        b = tensor_to_board(board)
+        b = Board(False)
+        b.board = board
         valid_moves = b.get_legal_moves(player)
         valid_actions = np.zeros(self.getActionSize(), dtype=np.int8)
 
@@ -69,7 +69,8 @@ class LaniakeaGame(Game):
     def getGameEnded(self, board, player):
         # return 0 if not ended, 1 if player 1 won, -1 if player 1 lost
         # player = 1
-        b = tensor_to_board(board)
+        b = Board(False)
+        b.board = board
 
         if b.is_win(player):
             #print(f"Player {player} wins!")
@@ -92,30 +93,22 @@ class LaniakeaGame(Game):
             #print(f"Board before flip \n{self.boardToString(board)}")
             board_copy = board.copy()  # Don't modify the original
 
-            # Swap white (2:5) and black (5:8) piece channels
-            white_pieces = board_copy[:, :, 2:5].copy()
-            black_pieces = board_copy[:, :, 5:8].copy()
-            board_copy[:, :, 2:5] = black_pieces
-            board_copy[:, :, 5:8] = white_pieces
+            # Negate piece channels
+            board_copy[:, :, 2:5] *= -1
 
-            board_copy[:, :, 0:8] = np.flip(board_copy[:, :, 0:8], axis=(0, 1))
+            board_copy[:, :, 0:5] = np.flip(board_copy[:, :, 0:5], axis=(0, 1))
 
+            # Swap home pieces (channels 5 and 6)
+            white_home = board_copy[:, :, 5].copy()
+            black_home = board_copy[:, :, 6].copy()
+            board_copy[:, :, 5] = black_home
+            board_copy[:, :, 6] = white_home
 
-
-            # Set player channel to 1 (always from white's perspective)
-            board_copy[:, :, 8] = 1.0
-
-            # Swap home pieces (channels 9 and 10)
-            white_home = board_copy[:, :, 9].copy()
-            black_home = board_copy[:, :, 10].copy()
-            board_copy[:, :, 9] = black_home
-            board_copy[:, :, 10] = white_home
-
-            # Swap scored pieces (channels 11 and 12)
-            white_score = board_copy[:, :, 11].copy()
-            black_score = board_copy[:, :, 12].copy()
-            board_copy[:, :, 11] = black_score
-            board_copy[:, :, 12] = white_score
+            # Swap scored pieces (channels 7 and 8)
+            white_score = board_copy[:, :, 7].copy()
+            black_score = board_copy[:, :, 8].copy()
+            board_copy[:, :, 7] = black_score
+            board_copy[:, :, 8] = white_score
             #print(f"Board after flip \n{self.boardToString(board_copy)}")
             return board_copy
             
@@ -126,9 +119,8 @@ class LaniakeaGame(Game):
         return board.tobytes()
     
     def boardToString(self, board):
-        board = tensor_to_board(board).board
         board_str = ""
-        board_str += f"Home W: {board[0, 6]}, Home B: {board[1, 6]}, Scored W: {board[2, 6]}, Scored B: {board[3, 6]}\n"
+        board_str += f"Home W: {board[0][0][5]*8}, Home B: {board[0][0][6]*8}, Scored W: {board[0][0][7]*5}, Scored B: {board[0][0][8]*5}\n"
         for y in range(5, -1, -1):
             for x in range(8):
                 field = board[x, y]

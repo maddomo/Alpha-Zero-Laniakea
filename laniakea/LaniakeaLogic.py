@@ -16,7 +16,7 @@ Based on the board for the game of Othello by Eric P. Nichols.
 '''
 import random
 import numpy as np
-from .LaniakeaHelper import encode_plate, decode_plate, encode_stack, decode_stack
+from .LaniakeaHelper import encode_plate, decode_plate, decode_stack
 # from bkcharts.attributes import color
 
 # Board field encoding explained assuming 32 bit integers:
@@ -35,19 +35,28 @@ from .LaniakeaHelper import encode_plate, decode_plate, encode_stack, decode_sta
 class Board():
     # list of all 4 directions on the board, as (x,y) offsets
     __directions = [(1,0),(0,1),(-1,0),(0,-1)]
+    max_home_pieces = 8
+    max_scored_pieces = 5
 
     def __init__(self, randomize=True):
         """
         Initializes the board. If randomize is False, it initializes
         to an empty or default state without random placements.
         """ 
-         # (6 plates removed from none, as they are added in each row before adding the rest)
-        self.plates = [5, 12, 5]    # two turtles, one turtle, no turtle
+
+        #Lambdas
+        # Returns True if the field is empty or has a turtle on the given position
+        self.empty_trtl = lambda x, y: self.board[x][y][0] == 1 or self.board[x][y][1] == 1
+
+
+        # (6 plates removed from none, as they are added in each row before adding the rest)
+        tensor = np.zeros((8, 6, 13), dtype=np.float16)
         if not randomize:
-            self.board = np.zeros((8, 7), dtype=int)
+            self.board = tensor
             return
         
         # Randomized setup
+        self.plates = [5, 12, 5]    # two turtles, one turtle, no turtle
         rows = 6
         cols = 8
         board = [[None for _ in range(rows + 1)] for _ in range(cols)]
@@ -69,7 +78,7 @@ class Board():
         board[3][rows] = 0 # Black pieces in scoring space
         insert_plate = self.get_random_plate()
         board[4][rows] = encode_plate(insert_plate)  # Insertable tile type
-        self.board = np.array(board)
+        self.board = self.board_to_tensor(np.array(board))
             
     def get_random_plate(self):        
         available_indices = [i for i, count in enumerate(self.plates) if count > 0]
@@ -113,28 +122,26 @@ class Board():
     def step_move(board, color, lastPosition=None, newPosition=None):
         # moveList type: List[Tuple,Tuple,List[Tuple()]]
         moveList = []
-        player_home = 0 if color == 1 else 1
+        player_home = 5 if color == 1 else 6
         # Check if a move from home is possible and if so, move a piece to the board
         # Not checking all directions, as only the first row from each side is relevant
-        if board[player_home][6] > 0:
+        if board[0][0][player_home]*Board.max_home_pieces > 0:
             for x in range(8):
                 y = 0 if color == 1 else 5
-                square = board[x][y]
-                
-                if square == -1: continue
+                if board[x][y][1] == 1: continue
+
                 # Skip if move reverses the last move
                 # If a piece scores, lastPosition will not be close to home, so reversing is not possible
                 if (lastPosition is not None and newPosition is not None):
                     if (-1,-1) == newPosition and (x, y) == lastPosition: 
                         continue
 
-                stack = decode_stack(square)
-                if len(stack) == 3: continue
+                h = len(decode_stack(x, y, board))
+                if h == 3: continue
 
-                stack.append(color)
                 cloned_board = np.copy(board)
-                cloned_board[player_home][6] -= 1
-                cloned_board[x][y] = encode_stack(stack)
+                cloned_board[0][0][player_home] -= 1/Board.max_home_pieces
+                cloned_board[x][y][2+h] = color
                 if lastPosition is not None and newPosition is not None:
                     moveList.append(((-1, -1), (x, y), Board.plate_positions(y)))
                 else:
@@ -145,13 +152,12 @@ class Board():
             
         for y in range(6):
             for x in range(8):
-                if board[x][y] == -1 or board[x][y] == 0: continue
-                from_stack = decode_stack(board[x][y])
+                if board[x][y][0] == 1 or board[x][y][1] == 1: continue
+                from_stack = decode_stack(x, y, board)
                 height = len(from_stack)
                 top_color = from_stack[height - 1]
                 if top_color != color: continue
                 for tuple in Board.__directions:
-                    from_stack_copy = list(from_stack)
                     new_x = x + tuple[0] * height
                     new_y = y + tuple[1] * height
 
@@ -165,17 +171,21 @@ class Board():
                         if (lastPosition is not None and newPosition is not None):
                             if (x, y) == newPosition and (new_x, new_y) == lastPosition:
                                 continue
-                        if board[new_x][new_y] == -1: 
-                            continue #Cannot bemoved on Turtle
+                    # Don't allow moving to a turtle
+                        if board[new_x][new_y][1] == 1: 
+                            continue 
                             
                     # Out of bounds left or right
                     if new_x < 0 or new_x >= 8:
                         new_x = -1
                         new_y = -1
-                        from_stack_copy.pop()
+
                         cloned_board = np.copy(board)
-                        cloned_board[x][y] = encode_stack(from_stack_copy)
-                        cloned_board[player_home][6] += 1
+                        cloned_board[x][y][1+height] = 0
+                        if height == 1:
+                            cloned_board[x][y][0] = 1
+                        cloned_board[0][0][player_home] += 1/Board.max_home_pieces
+
                         if lastPosition is not None and newPosition is not None:
                             moveList.append(((x, y), (new_x, new_y), Board.plate_positions(new_y)))
                         else:
@@ -187,13 +197,14 @@ class Board():
                         # Signaling, that the last move was a scoring move
                         new_x = -2
                         new_y = -2
-                        from_stack_copy.pop()
+                        
                         cloned_board = np.copy(board)
-                        cloned_board[x][y] = encode_stack(from_stack_copy)
-                        cloned_board[2 + player_home][6] += 1
-                        #print(f"lastPosition {lastPosition}, newPosition {newPosition} \n")
+                        cloned_board[x][y][1+height] = 0
+                        if height == 1:
+                            cloned_board[x][y][0] = 1
+                        cloned_board[0][0][2 + player_home] += 1/Board.max_home_pieces
+
                         if lastPosition is not None and newPosition is not None:
-                            #print("Second move \n")
                             moveList.append(((x, y), (new_x, new_y), Board.plate_positions(new_y)))
                         else:
                             # Check if a second move is possible
@@ -210,10 +221,12 @@ class Board():
                     if (color == -1 and new_y >= 6) or (color == 1 and new_y < 0):
                         new_x = -1
                         new_y = -1
-                        from_stack_copy.pop()
+                        
                         cloned_board = np.copy(board)
-                        cloned_board[x][y] = encode_stack(from_stack_copy)
-                        cloned_board[0 + player_home][6] += 1
+                        cloned_board[x][y][1 + height] = 0
+                        if height == 1:
+                            cloned_board[x][y][0] = 1
+                        cloned_board[0][0][player_home] += 1/Board.max_home_pieces
                         if lastPosition is not None and newPosition is not None:
                             moveList.append(((x, y), (new_x, new_y), Board.plate_positions(new_y)))
                         else:
@@ -223,15 +236,17 @@ class Board():
                                 moveList.append(((x, y), (new_x, new_y), second_moves))
                         continue
 
-                    to_stack = decode_stack(board[new_x][new_y])
+                    to_height = len(decode_stack(new_x, new_y, board))
 
-                    if len(to_stack) == 3: continue
-
-                    to_stack.append(color)
-                    from_stack_copy.pop()
+                    if to_height == 3: continue
+                    # Checking for turtle happens in line 175
                     cloned_board = np.copy(board)
-                    cloned_board[x][y] = encode_stack(from_stack_copy)
-                    cloned_board[new_x][new_y] = encode_stack(to_stack)
+                    # Remove the top piece from the stack
+                    cloned_board[x][y][1 + height] = 0
+                    if height == 1:
+                        cloned_board[x][y][0] = 1
+                    # Add the piece to the new position
+                    cloned_board[new_x][new_y][2 + to_height] = color
                     if lastPosition is not None and newPosition is not None:
                         moveList.append(((x, y), (new_x, new_y), Board.plate_positions(new_y)))
                     else:
@@ -255,7 +270,7 @@ class Board():
         into the endzone of the opponent or if the opponent doesn't have any moves left
         @param color (1=white,-1=black)
         """
-        is_in_endzone = self.board[2 + (0 if color == 1 else 1)][6] == 2
+        is_in_endzone = self.board[0][0][7 + (0 if color == 1 else 1)] == 1
 
         opp_has_moves_left = self.has_legal_moves(-color)
 
@@ -268,43 +283,45 @@ class Board():
         #print(f"Executing move for player {color} with actions: {actions}")
         #print("Board before move:\n", self.board)
         moves, insert_row = actions
-        player_home = 0 if color == 1 else 1
+        player_home = 5 if color == 1 else 6
         for move in moves:
             from_pos, to_pos = move[0], move[1]
             if from_pos == (-1,-1):
                 # Move from Home
             
                 x, y = to_pos
-                stack = decode_stack(self.board[x][y])
-                stack.append(color)
-                self.board[x][y] = encode_stack(stack)
-                self.board[player_home][6] -= 1
+                h = len(decode_stack(x, y, self.board))
+                assert h < 3, "Cannot place more than 3 pieces on a stack"
+                self.board[x][y][2 + h] = color
+                self.board[:, :, player_home] -= 1/Board.max_home_pieces
             else:
                 x1, y1 = from_pos
                 x2, y2 = to_pos
-            
-
+                
+                h1 = len(decode_stack(x1, y1, self.board))
+                assert h > 0, "Cannot move an empty stack"
                 # Remove top piece from stack
-                from_stack = decode_stack(self.board[x1][y1])
-                piece = from_stack.pop()
-                self.board[x1][y1] = encode_stack(from_stack)
+                self.board[x1][y1][1 + h1] = 0
+                # Set field to empty if no pieces left
+                if h1 == 1:
+                    self.board[x1][y1][0] = 1
 
                 if to_pos == (-2,-2):
                     # Scoring Move
                     #print("SCORED Player", color, "has scored\n")
-                    self.board[2 + player_home][6] += 1
+                    self.board[:, :, 2 + player_home] += 1/Board.max_scored_pieces
                     #print(f"Moved piece from ({x1}, {y1}) to scoring area")
                     #print(self.board[2 + player_home][6], "pieces in scoring area")
                     
                 elif to_pos == (-1,-1):
                     # Back Home
-                    self.board[player_home][6] += 1
+                    self.board[:, :, player_home] += 1/Board.max_home_pieces
                     
                 else:
                     # Normal Move
-                    to_stack = decode_stack(self.board[x2][y2])
-                    to_stack.append(piece)
-                    self.board[x2][y2] = encode_stack(to_stack)
+                    h2 = len(decode_stack(x2, y2, self.board))
+                    assert h2 < 3, "Cannot place more than 3 pieces on a stack"
+                    self.board[x2][y2][2 + h2] = color
                  
         self.insert_plate_into_row(insert_row)
         #print("Board after move:\n", self.board)
@@ -320,49 +337,128 @@ class Board():
         # insert from left
         if row < 6:
             for i in range(2):
-                if self.board[6+i][row] == 0 or self.board[6+i][row] == -1:
+                # Skip turtle and empty fields
+                if self.empty_trtl(6+i, row):
                     continue
                 # Return the pieces to the home row when pushing them off the board
              
-                stack = decode_stack(self.board[6+i][row])
+                stack = decode_stack(6+i, row, self.board)
+                # Set field to empty
+                self.board[6+i][row][1] = 1  
                 
                 for piece in stack:
-                    self.board[0 + (0 if piece == 1 else 1)][6] += 1
-                # Set the field to empty, so the tile can be saved properly
-                self.board[6+i][row] = 0
+                    self.board[:, :, 5 + (0 if piece == 1 else 1)] += 1/Board.max_home_pieces
 
             # Shift the row to the right
             board_copy = np.copy(self.board)
-            for i in range(2, 8):
-                self.board[i][row] = board_copy[i - 2][row]
-            insert_plate = decode_plate(self.board[4][6])
-            self.board[0][row] = insert_plate[0]
-            self.board[1][row] = insert_plate[1]
-            self.board[4][6] = encode_plate([board_copy[6][row], board_copy[7][row]])
+            for x in range(2, 8):
+                for c in range(0,5):    # Shift all board channels
+                    self.board[x][row][c] = board_copy[x - 2][row][c]
 
+            plate_type = 0
+            for i in range(2):
+                if self.board[0][0][9+i] == 1:
+                    plate_type = i
+                    break
+            insert_plate = decode_plate(plate_type)
+
+            self.board[0][row][insert_plate[0]] = 1
+            self.board[1][row][insert_plate[1]] = 1
+
+            pushed_plate = [0, 0]
+            for i in range(2):
+                if board_copy[6][row][i] == 1:
+                    pushed_plate[i] = -i
+                if board_copy[7][row][i] == 1:
+                    pushed_plate[i] = -i
+            push_type = encode_plate(pushed_plate)
+            # Set the plate type in the board
+            self.board[:, :, 9+push_type] = 1.0
 
 
         # insert from right
         else:
             row -= 6  # Adjust row for right side insertion
             for i in range(2):
-                if self.board[0+i][row] == 0 or self.board[0+i][row] == -1:
+                # Skip turtle and empty fields
+                if self.empty_trtl(i, row):
                     continue
                 # Return the pieces to the home row when pushing them off the board
                
-                stack = decode_stack(self.board[0+i][row])
+                stack = decode_stack(i, row, self.board)
+                
+                # Set field to empty
+                self.board[6+i][row][1] = 1  
                 
                 for piece in stack:
-                    self.board[0 + (0 if piece == 1 else 1)][6] += 1
-                # Set the field to empty, so the tile can be saved properly
-                self.board[0+i][row] = 0
+                    self.board[:, :, 5 + (0 if piece == 1 else 1)] += 1/Board.max_home_pieces
 
             # Shift the row to the left
             board_copy = np.copy(self.board)
-            for i in range(0, 6):
-                self.board[i][row] = board_copy[i + 2][row]
-            insert_plate = decode_plate(self.board[4][6])
-            self.board[6][row] = insert_plate[0]
-            self.board[7][row] = insert_plate[1]
-            self.board[4][6] = encode_plate([board_copy[0][row], board_copy[1][row]])
+            for x in range(0, 6):
+                for c in range(0,5):    # Shift all board channels
+                    self.board[x][row][c] = board_copy[x + 2][row][c]
+
+            plate_type = 0
+            for i in range(2):
+                if self.board[0][0][9+i] == 1:
+                    plate_type = i
+                    break
             
+            insert_plate = decode_plate(plate_type)
+
+            self.board[6][row][insert_plate[0]] = 1
+            self.board[7][row][insert_plate[1]] = 1
+
+            pushed_plate = [0, 0]
+            for i in range(2):
+                if board_copy[0][row][i] == 1:
+                    pushed_plate[i] = -i
+                if board_copy[1][row][i] == 1:
+                    pushed_plate[i] = -i
+            push_type = encode_plate(pushed_plate)
+            # Set the plate type in the board
+            self.board[:, :, 9+push_type] = 1.0
+            
+
+
+    # Converts a Laniakea board to a tensor representation
+    # Used to simplify initialization of a random board
+    # The tensor has the shape (8, 6, 13):
+    # - 8 columns (x-axis)
+    # - 6 rows (y-axis)
+    # - 13 channels:
+    #   - 1 channel for turtle
+    #   - 1 channel for empty fields
+    #   - 3 channels for pieces (bottom to top)
+    #   - 2 channels for home pieces (white and black)
+    #   - 2 channels for scored pieces (white and black)
+    #   - 4 channels for the insertable tile type (0, 1, or 2, 3)
+
+    def board_to_tensor(self, board):
+        tensor = np.zeros((8, 6, 13), dtype=np.float16)
+        rows = 6
+        cols = 8
+
+        for x in range(cols):
+            for y in range(rows):
+                field = board[x][y]
+                if field == 0:
+                    tensor[x][y][0] = 1.0  # Empty
+                elif field == -1:
+                    tensor[x][y][1] = 1.0  # Turtle
+
+        # Home pieces
+        tensor[:, :, 5] = board[0][6] / Board.max_home_pieces  # White
+        tensor[:, :, 6]  = board[1][6] / Board.max_home_pieces  # Black
+        
+
+        # Scored pieces
+        tensor[:, :,7] = board[2][6] / Board.max_scored_pieces  # White
+        tensor[:, :, 8] = board[3][6] / Board.max_scored_pieces  # Black
+        
+
+        tile_type = board[4][rows]
+        tensor[:, :, 9 + tile_type] = 1.0
+
+        return tensor
