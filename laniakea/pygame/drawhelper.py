@@ -65,7 +65,7 @@ def draw_laniakea_piece(surface, stack_value, location, field_type):
     if(field_type == 1):
         pygame.draw.rect(surface, SELECTED_COLOR, (x, y, PIECE_SIZE, PIECE_SIZE))
     elif(field_type == 2):
-        pygame.draw.rect(surface, SELECTED_COLOR, (x, y, PIECE_SIZE, PIECE_SIZE))
+        pygame.draw.rect(surface, MOVE_COLOR, (x, y, PIECE_SIZE, PIECE_SIZE))
     else:
         pygame.draw.rect(surface, FOREGROUND, (x, y, PIECE_SIZE, PIECE_SIZE))
 
@@ -141,59 +141,3 @@ def draw_pieces_in_house(surface, start_x, start_y, width, height, piece_count, 
         pygame.draw.circle(surface, BLACK, (center_x, center_y), radius)
         # Innenfarbe (piece_color)
         pygame.draw.circle(surface, piece_color, (center_x, center_y), radius - border_width)
-
-def draw_board_helper(screen, board, selected_field, possible_moves, current_player):
-    global rows, cols
-    piece_height = PIECE_HEIGHT
-    piece_width = PIECE_WIDTH
-    
-    board_width = piece_width * 8
-    board_height = piece_height * 8
-
-    x = SCREEN_WIDTH / 2 - board_width / 2
-    y = 4
-
-    #background
-    pygame.draw.rect(screen, FOREGROUND_ACCENT_2, (x, y, board_width, board_height))
-    
-    # Black house
-    if selected_field == (-1, -1) and current_player == -1:
-        draw_rect_with_border(screen, (x, y, board_width, piece_height * 2), SELECTED_COLOR, FOREGROUND_ACCENT_2, 2)
-    else:
-        draw_rect_with_border(screen, (x, y, board_width, piece_height * 2), FOREGROUND, FOREGROUND_ACCENT_2, 2)
-    # Black pieces in black's home space
-    draw_pieces_in_house(screen, x, y + piece_height, board_width, piece_height, board[1][ROWS], 3)
-    # White pieces in scoring space
-    draw_pieces_in_house(screen, x, y, board_width, piece_height, board[2][ROWS], 1)
-
-    y += piece_height * 2
-
-    filtered_possible_moves = filter_possible_moves(possible_moves, selected_field)
-
-    #laniakea rows
-    for offset_y in range(6):  # 0 → 5 (unten → oben)
-        for offset_x in range(COLS):
-            board_y = 5 - offset_y  # Invertiere y, sodass 0 = unten
-            if (selected_field == (offset_x, offset_y)):
-                draw_laniakea_piece(screen, board[offset_x][board_y], (x + offset_x * piece_width, y + offset_y * piece_height), 1)
-            elif ((offset_x, board_y) in filtered_possible_moves):
-                draw_laniakea_piece(screen, board[offset_x][board_y], (x + offset_x * piece_width, y + offset_y * piece_height), 2)
-            else:
-                draw_laniakea_piece(screen, board[offset_x][board_y], (x + offset_x * piece_width, y + offset_y * piece_height), 0)
-
-    
-    y += piece_height * 6
-
-    # White house
-    if selected_field == (-1, -1) and current_player == 1:
-        draw_rect_with_border(screen, (x, y, board_width, piece_height * 2), SELECTED_COLOR, FOREGROUND_ACCENT_2, 2)
-    else:
-        draw_rect_with_border(screen, (x, y, board_width, piece_height * 2), FOREGROUND, FOREGROUND_ACCENT_2, 2)
-    # White pieces in white's home space
-    draw_pieces_in_house(screen, x, y, board_width, piece_height, board[0][ROWS], 1)
-    # Black pieces in scoring space
-    draw_pieces_in_house(screen, x, y + piece_height, board_width, piece_height, board[3][ROWS], 3)
-
-def filter_possible_moves(possible_moves, selected_field):
-    filtered_list = [n[1] for n in possible_moves if n[0] == selected_field]
-    return filtered_list
