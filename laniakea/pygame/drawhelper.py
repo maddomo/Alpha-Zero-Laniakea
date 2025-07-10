@@ -56,7 +56,6 @@ def draw_laniakea_piece(surface, stack_value, location, field_type):
      # if empty
     if stack_value == 0:
         pygame.draw.rect(surface, FOREGROUND, (x, y, PIECE_SIZE, PIECE_SIZE))
-        return
     
     # if turtle
     if stack_value == -1:
@@ -156,7 +155,7 @@ def draw_board_helper(screen, board, selected_field, possible_moves, current_pla
 
     #background
     pygame.draw.rect(screen, FOREGROUND_ACCENT_2, (x, y, board_width, board_height))
-
+    
     # Black house
     if selected_field == (-1, -1) and current_player == -1:
         draw_rect_with_border(screen, (x, y, board_width, piece_height * 2), SELECTED_COLOR, FOREGROUND_ACCENT_2, 2)
@@ -169,7 +168,7 @@ def draw_board_helper(screen, board, selected_field, possible_moves, current_pla
 
     y += piece_height * 2
 
-    test = filter_possible_moves(possible_moves, selected_field)
+    filtered_possible_moves = filter_possible_moves(possible_moves, selected_field)
 
     #laniakea rows
     for offset_y in range(6):  # 0 → 5 (unten → oben)
@@ -177,7 +176,7 @@ def draw_board_helper(screen, board, selected_field, possible_moves, current_pla
             board_y = 5 - offset_y  # Invertiere y, sodass 0 = unten
             if (selected_field == (offset_x, offset_y)):
                 draw_laniakea_piece(screen, board[offset_x][board_y], (x + offset_x * piece_width, y + offset_y * piece_height), 1)
-            elif ((offset_x, offset_y) in possible_moves):
+            elif ((offset_x, board_y) in filtered_possible_moves):
                 draw_laniakea_piece(screen, board[offset_x][board_y], (x + offset_x * piece_width, y + offset_y * piece_height), 2)
             else:
                 draw_laniakea_piece(screen, board[offset_x][board_y], (x + offset_x * piece_width, y + offset_y * piece_height), 0)
@@ -196,5 +195,5 @@ def draw_board_helper(screen, board, selected_field, possible_moves, current_pla
     draw_pieces_in_house(screen, x, y + piece_height, board_width, piece_height, board[3][ROWS], 3)
 
 def filter_possible_moves(possible_moves, selected_field):
-    filtered_list = [n for n in possible_moves if n[0] == selected_field]
+    filtered_list = [n[1] for n in possible_moves if n[0] == selected_field]
     return filtered_list
