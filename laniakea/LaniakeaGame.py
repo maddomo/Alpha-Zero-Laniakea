@@ -125,7 +125,8 @@ class LaniakeaGame(Game):
     def stringRepresentation(self, board):
         return board.tobytes()
     
-    def boardToString(self, board):
+    @staticmethod
+    def display( board):
         board = tensor_to_board(board).board
         board_str = ""
         board_str += f"Home W: {board[0, 6]}, Home B: {board[1, 6]}, Scored W: {board[2, 6]}, Scored B: {board[3, 6]}\n"

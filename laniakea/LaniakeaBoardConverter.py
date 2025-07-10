@@ -17,7 +17,7 @@ from .LaniakeaLogic import Board
 #   - 4 channels for the insertable tile type (0, 1, or 2, 3)
 
 def board_to_tensor(board, player):
-    tensor = np.zeros((8, 6, 17), dtype=np.float32)
+    tensor = np.zeros((8, 6, 17), dtype=np.float16)
     board = board.board
     rows = 6
     cols = 8

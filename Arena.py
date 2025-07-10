@@ -27,7 +27,7 @@ class Arena():
         self.game = game
         self.display = display
 
-    def playGame(self, verbose=False):
+    def playGame(self, verbose=True):
         """
         Executes one episode of a game.
 
