@@ -53,7 +53,7 @@ class LaniakeaGame(Game):
                 insert_row = random.choice(insert_rows)
             else:
                 insert_row = 12
-            decode_action = (from_pos1, to_pos1), (from_pos2, to_pos2), insert_row
+            decoded_action = (from_pos1, to_pos1), (from_pos2, to_pos2), insert_row
         else:
             decoded_action = decode_action(action)
         # mirror move if player is -1, due to canonical form bullshit
@@ -70,7 +70,7 @@ class LaniakeaGame(Game):
 
         for first_move in valid_moves:
             for second_move in first_move[2]:
-                if len(insert_row == 0):
+                if len(second_move[2]) == 0:
                     i = encode_action((first_move[0], first_move[1]), (second_move[0], second_move[1]), 12)
                     valid_actions[i] = 1
                 for insert_row in second_move[2]: 

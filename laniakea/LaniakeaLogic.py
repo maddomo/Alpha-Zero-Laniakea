@@ -305,8 +305,8 @@ class Board():
                     to_stack = decode_stack(self.board[x2][y2])
                     to_stack.append(piece)
                     self.board[x2][y2] = encode_stack(to_stack)
-                 
-        self.insert_plate_into_row(insert_row)
+        if (insert_row < 12):
+            self.insert_plate_into_row(insert_row)
         #print("Board after move:\n", self.board)
 
 
