@@ -35,7 +35,7 @@ def decode_stack(n):
 from itertools import product
 
 HOME_POS = (-1, -1)
-INSERT_ROWS = 12
+INSERT_ROWS = 13
 #ROTATE_OPTIONS = 2
 SCORING_POS = (-2,-2)
 
@@ -107,7 +107,7 @@ def mirror_action(action):
     if move[1] != HOME_POS and move[1] != SCORING_POS:
         move_copy[1] = (7 - move[1][0], 5 - move[1][1])
 
-    return (tuple(move_copy), 11 - insert_row)
+    return (tuple(move_copy), 11 - insert_row if insert_row < 12 else 12)
 
 
 def encode_plate(plate):

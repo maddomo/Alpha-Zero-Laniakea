@@ -59,7 +59,6 @@ class LaniakeaGame(Game):
         # action must be a valid move
         else:
             decoded_action = decode_action(action)
-            print(f" move chosen: {decoded_action} for player {player}")
 
         if (player == -1):
             #print(f"Spiegel")
@@ -74,13 +73,12 @@ class LaniakeaGame(Game):
 
         for move in valid_moves:
             from_pos, to_pos, insert_rows = move  # Neu: Nur ein Move + Liste an Insert-Zeilen
-            if(len(insert_rows) == 0):
+            if len(insert_rows) == 0:
                 index = encode_action((from_pos, to_pos), 12)
                 valid_actions[index] = 1
-            else:
-                for insert_row in insert_rows:
-                    index = encode_action((from_pos, to_pos), insert_row)
-                    valid_actions[index] = 1
+            for insert_row in insert_rows:
+                index = encode_action((from_pos, to_pos), insert_row)
+                valid_actions[index] = 1
 
         return valid_actions
 

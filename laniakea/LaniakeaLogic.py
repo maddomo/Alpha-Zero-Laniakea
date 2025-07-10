@@ -231,10 +231,10 @@ class Board():
                 to_stack.append(piece)
                 self.board[x2][y2] = encode_stack(to_stack)
 
-        self.lastMove = (from_pos, to_pos)
         # Einschüben nach dem Zug
         if(insert_row < 12):
             self.insert_plate_into_row(insert_row)
+        self.lastMove = (from_pos, to_pos)
         
         
 
