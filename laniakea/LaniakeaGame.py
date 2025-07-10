@@ -6,6 +6,7 @@ from .LaniakeaLogic import Board
 from .LaniakeaHelper import ACTION_SIZE, decode_action, encode_action, decode_stack, mirror_action
 from .LaniakeaBoardConverter import board_to_tensor, tensor_to_board
 import numpy as np
+import random
 
 """
 Game class implementation for the game of TicTacToe.
@@ -45,7 +46,16 @@ class LaniakeaGame(Game):
         # if player takes action on board, return next (board,player)
         # action must be a valid move
         b = tensor_to_board(board)
-        decoded_action = decode_action(action)
+        if action == -1:
+            random_move = random.choice(b.get_legal_moves(player))
+            from_pos1, to_pos1, from_pos2, to_pos2, insert_rows = random_move
+            if(len(insert_rows) > 0):
+                insert_row = random.choice(insert_rows)
+            else:
+                insert_row = 12
+            decode_action = (from_pos1, to_pos1), (from_pos2, to_pos2), insert_row
+        else:
+            decoded_action = decode_action(action)
         # mirror move if player is -1, due to canonical form bullshit
         if (player == -1):
             #print(f"Spiegel")
@@ -60,6 +70,9 @@ class LaniakeaGame(Game):
 
         for first_move in valid_moves:
             for second_move in first_move[2]:
+                if len(insert_row == 0):
+                    i = encode_action((first_move[0], first_move[1]), (second_move[0], second_move[1]), 12)
+                    valid_actions[i] = 1
                 for insert_row in second_move[2]: 
                     i = encode_action((first_move[0], first_move[1]), (second_move[0], second_move[1]), insert_row)
                     valid_actions[i] = 1
