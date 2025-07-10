@@ -36,7 +36,7 @@ from itertools import product
 
 HOME_POS = (-1, -1)
 INSERT_ROWS = 12
-ROTATE_OPTIONS = 2
+#ROTATE_OPTIONS = 2
 SCORING_POS = (-2,-2)
 
 ALL_MOVES = []
@@ -74,62 +74,40 @@ for move in ALL_MOVES:
 ALL_MOVES = unique_moves
 
 MAX_MOVES = len(ALL_MOVES)
-ACTION_SIZE = MAX_MOVES * MAX_MOVES * INSERT_ROWS 
+ACTION_SIZE = MAX_MOVES * INSERT_ROWS
 MOVE_TO_ID = {m: i for i, m in enumerate(ALL_MOVES)}
 ID_TO_MOVE = {i: m for m, i in MOVE_TO_ID.items()}
 #print(f"Total Moves: {len(ALL_MOVES)}")
 #print(MOVE_TO_ID,"\n")
 #print(ID_TO_MOVE,"\n")
+print(f"Total Actions: {ACTION_SIZE} (Moves: {MAX_MOVES}, Insert Rows: {INSERT_ROWS})")
 
 # ------------------------------------------------
 # Encode to single index
 # ------------------------------------------------
-def encode_action(move1, move2, insert_row):
-    """
-    Encode: ((move1, move2?), insert_row, rotate) → single int index
-    """
-    id1 = MOVE_TO_ID[move1]
-    id2 = MOVE_TO_ID[move2]
-    return ((id1 * MAX_MOVES + id2) * INSERT_ROWS) + insert_row
+def encode_action(move, insert_row):
+    id1 = MOVE_TO_ID[move]
+    return id1 * INSERT_ROWS + insert_row
 
 # ------------------------------------------------
 # Decode from index
 # ------------------------------------------------
 def decode_action(index):
-    """
-    Decode: int index → ((move1, move2), insert_row, rotate_tile)
-    """
-   
-    pair_row, insert_row = divmod(index, INSERT_ROWS)
-    id1, id2 = divmod(pair_row, MAX_MOVES)
-
-    if(id1 < 0 or id2 < 0):
-        raise ValueError(f"Invalid action index: {index}. id1: {id1}, id2: {id2}")
-
-    move1 = ID_TO_MOVE[id1]
-    move2 = ID_TO_MOVE[id2]
-
-    return ((move1, move2), insert_row)
+    move_id, insert_row = divmod(index, INSERT_ROWS)
+    move = ID_TO_MOVE[move_id]
+    return (move, insert_row)
 
 def mirror_action(action):
-    """
-    Mirror action for player -1
-    """
-    (move1, move2), insert_row = action
+    move, insert_row = action
+    move_copy = list(move)
 
-    mirrored_moves = []
-    for move in (move1, move2):
-        move_copy = list(move)  # Umwandlung in veränderbare Liste
+    if move[0] != HOME_POS and move[0] != SCORING_POS:
+        move_copy[0] = (7 - move[0][0], 5 - move[0][1])
 
-        if move[0] != HOME_POS and move[0] != SCORING_POS:
-            move_copy[0] = (7 - move[0][0], 5 - move[0][1])
+    if move[1] != HOME_POS and move[1] != SCORING_POS:
+        move_copy[1] = (7 - move[1][0], 5 - move[1][1])
 
-        if move[1] != HOME_POS and move[1] != SCORING_POS:
-            move_copy[1] = (7 - move[1][0], 5 - move[1][1])
-
-        mirrored_moves.append(tuple(move_copy))  # wieder zurück zu Tuple
-
-    return (tuple(mirrored_moves), 11 - insert_row)
+    return (tuple(move_copy), 11 - insert_row)
 
 
 def encode_plate(plate):
@@ -155,3 +133,5 @@ def decode_plate(index):
         return [0, -1]
     else:
         raise ValueError("Invalid plate decoding: {}".format(index))
+    
+print(encode_action(((0, 0), (1, 0)), 0))

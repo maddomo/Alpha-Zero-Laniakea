@@ -34,14 +34,14 @@ class LaniakeaNNet(nn.Module):
             self.linear_input_size = x.view(1, -1).size(1)
 
         # ──────────────────────────────────── fully connected ─
-        self.fc1 = nn.Linear(self.linear_input_size, 128)
-        self.fc_bn1 = nn.BatchNorm1d(128)
+        self.fc1 = nn.Linear(self.linear_input_size, 256)
+        self.fc_bn1 = nn.BatchNorm1d(256)
 
-        self.fc2 = nn.Linear(128, 64)
-        self.fc_bn2 = nn.BatchNorm1d(64)
+        self.fc2 = nn.Linear(256, 128)
+        self.fc_bn2 = nn.BatchNorm1d(128)
 
-        self.fc_pi = nn.Linear(64, self.action_size)
-        self.fc_v = nn.Linear(64, 1)
+        self.fc_pi = nn.Linear(128, self.action_size)
+        self.fc_v = nn.Linear(128, 1)
 
     def _forward_conv(self, s):
         s = F.relu(self.bn1(self.conv1(s)))

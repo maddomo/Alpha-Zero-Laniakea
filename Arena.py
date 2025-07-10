@@ -48,9 +48,9 @@ class Arena():
 
         while self.game.getGameEnded(board, curPlayer) == 0:
             it += 1
-            if(it > 250):
-                log.warning(f"Aborting: Episode exceeded 250 turns – likely no end reachable, returning bad result.")
-                return 0
+            #if(it > 1000):
+             #   log.warning(f"Aborting: Episode exceeded 250 turns – likely no end reachable, returning bad result.")
+              #  return 0
 
             if verbose:
                 assert self.display
@@ -63,6 +63,7 @@ class Arena():
             if valids[action] == 0:
                 log.error(f'Action {action} is not valid!')
                 log.debug(f'valids = {valids}')
+                self.display(board)
                 assert valids[action] > 0
 
             # Notifying the opponent for the move

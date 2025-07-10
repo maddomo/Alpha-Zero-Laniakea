@@ -3,9 +3,10 @@ import sys
 sys.path.append('..')
 from Game import Game
 from .LaniakeaLogic import Board
-from .LaniakeaHelper import ACTION_SIZE, decode_action, encode_action, decode_stack, mirror_action
+from .LaniakeaHelper import ACTION_SIZE, decode_action, encode_action, decode_stack, mirror_action, encode_stack
 from .LaniakeaBoardConverter import board_to_tensor, tensor_to_board
 import numpy as np
+import random
 
 """
 Game class implementation for the game of TicTacToe.
@@ -42,9 +43,13 @@ class LaniakeaGame(Game):
         return ACTION_SIZE 
 
     def getNextState(self, board, player, action):
+        b = tensor_to_board(board)  
+        if action == -1:
+            action = random.choice(self.getValidMoves(board, player))
+            print(f"Random action chosen: {action}")
         # if player takes action on board, return next (board,player)
         # action must be a valid move
-        b = tensor_to_board(board)
+        
         decoded_action = decode_action(action)
         # mirror move if player is -1, due to canonical form bullshit
         if (player == -1):
@@ -58,13 +63,14 @@ class LaniakeaGame(Game):
         valid_moves = b.get_legal_moves(player)
         valid_actions = np.zeros(self.getActionSize(), dtype=np.int8)
 
-        for first_move in valid_moves:
-            for second_move in first_move[2]:
-                for insert_row in second_move[2]: 
-                    i = encode_action((first_move[0], first_move[1]), (second_move[0], second_move[1]), insert_row)
-                    valid_actions[i] = 1
+        for move in valid_moves:
+            from_pos, to_pos, insert_rows = move  # Neu: Nur ein Move + Liste an Insert-Zeilen
+            for insert_row in insert_rows:
+                index = encode_action((from_pos, to_pos), insert_row)
+                valid_actions[index] = 1
 
         return valid_actions
+
         
     def getGameEnded(self, board, player):
         # return 0 if not ended, 1 if player 1 won, -1 if player 1 lost
@@ -81,8 +87,17 @@ class LaniakeaGame(Game):
             #print(b.board)
             #print(f"\n Player 1 legal moves{b.has_legal_moves(player)}\nPlayer -1 legal moves{b.has_legal_moves(-player)}\n")
             return -1
+        
+        if(not b.has_legal_moves(-player)):
+            print("no legal moves")
+            return 1
+        if(not b.has_legal_moves(player)):
+            print("no legal moves")
+            return -1
         if b.has_legal_moves(player):
             return 0
+        return 1e-4
+        
 
 
     def getCanonicalForm(self, board, player):
@@ -148,4 +163,8 @@ class LaniakeaGame(Game):
                 board_str += " "
             board_str += "\n\n\n"
         return board_str
+    
+
+
+
         
