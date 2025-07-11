@@ -164,6 +164,8 @@ class Board():
                             moveList.append(((x, y), (-2, -2), Board.plate_positions(-2)))
                         elif (color == -1 and new_y >= 6) or (color == 1 and new_y < 0):
                             moveList.append(((x, y), (-1, -1), Board.plate_positions(-1)))
+                        elif (new_x < 0 or new_x >= 8):
+                            moveList.append(((x, y), (-1, -1), Board.plate_positions(-1)))
                         continue
 
                     # Verhindere Rückwärtsbewegung

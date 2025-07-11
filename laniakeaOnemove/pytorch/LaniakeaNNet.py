@@ -36,18 +36,21 @@ class LaniakeaNNet(nn.Module):
             x = self._forward_conv(dummy)
             self.linear_input_size = x.reshape(1, -1).size(1)
 
-        # ──────────────── fully connected head ────────────────
-        self.fc1 = nn.Linear(self.linear_input_size, 4096)
-        self.fc_bn1 = nn.BatchNorm1d(4096)
+        # ──────────────── fully connected head ────────────────        
+        self.fc1 = nn.Linear(self.linear_input_size, 8192)
+        self.fc_bn1 = nn.BatchNorm1d(8192)
 
-        self.fc2 = nn.Linear(4096, 2048)
-        self.fc_bn2 = nn.BatchNorm1d(2048)
+        self.fc2 = nn.Linear(8192, 4096)
+        self.fc_bn2 = nn.BatchNorm1d(4096)
 
-        self.fc3 = nn.Linear(2048, 1024)
-        self.fc_bn3 = nn.BatchNorm1d(1024)
+        self.fc3 = nn.Linear(4096, 2048)
+        self.fc_bn3 = nn.BatchNorm1d(2048)
 
-        self.fc4 = nn.Linear(1024, 512)
-        self.fc_bn4 = nn.BatchNorm1d(512)
+        self.fc4 = nn.Linear(2048, 1024)
+        self.fc_bn4 = nn.BatchNorm1d(1024)
+
+        self.fc5 = nn.Linear(1024, 512)
+        self.fc_bn5 = nn.BatchNorm1d(512)
 
         self.fc_pi = nn.Linear(512, self.action_size)
         self.fc_v = nn.Linear(512, 1)
@@ -76,6 +79,7 @@ class LaniakeaNNet(nn.Module):
         s = F.dropout(F.relu(self.fc_bn2(self.fc2(s))), p=self.args.dropout, training=self.training)
         s = F.dropout(F.relu(self.fc_bn3(self.fc3(s))), p=self.args.dropout, training=self.training)
         s = F.dropout(F.relu(self.fc_bn4(self.fc4(s))), p=self.args.dropout, training=self.training)
+        s = F.dropout(F.relu(self.fc_bn5(self.fc5(s))), p=self.args.dropout, training=self.training)
 
         pi = self.fc_pi(s)
         v = self.fc_v(s)
