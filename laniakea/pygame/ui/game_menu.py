@@ -1,9 +1,10 @@
-from ...LaniakeaHelper import decode_stack, encode_stack
+from ...LaniakeaHelper import decode_stack, encode_stack, decode_plate
 from ..consts import *
 from .menu import Menu
 from .. import drawhelper as dh
 from ...LaniakeaLogic import Board
 import pygame
+import copy
 
 ROWS = 6
 COLS = 8
@@ -13,13 +14,13 @@ class GameMenu(Menu):
     def __init__(self, screen, swap_menu):
         super().__init__(screen, swap_menu)
         self.board = Board()
-        self.visual_board = self.board
+        self.visual_board = copy.deepcopy(self.board)
         self.selected_field = None
-        self.possible_moves = []
         self.current_player = 1
         self.first_move = None
         self.second_move = None
         self.selected_row = None
+        self.possible_moves = self.board.get_legal_moves(self.current_player)
 
     def draw_screen(self):
 
@@ -101,7 +102,6 @@ class GameMenu(Menu):
     def set_selected_field(self, field):
         self.selected_field = field
         self.possible_moves = self.board.get_legal_moves(self.current_player)
-        
     
     def get_move_state(self):
         """
@@ -130,7 +130,7 @@ class GameMenu(Menu):
             stack = decode_stack(self.visual_board[x][y])
             stack.append(color)
             self.visual_board[x][y] = encode_stack(stack)
-            self.visual_board[player_home][y]
+            self.visual_board[player_home][ROWS] -= 1
         else:
             x1, y1 = from_field
             x2, y2 = to_field
@@ -228,6 +228,7 @@ class GameMenu(Menu):
         y += piece_height * 2
 
         move_state = self.get_move_state()
+        print(move_state)
 
         if move_state == 0:
             filtered_possible_moves = self.filter_possible_first_moves()
@@ -258,5 +259,9 @@ class GameMenu(Menu):
         dh.draw_pieces_in_house(self.screen, x, y, board_width, piece_height, self.visual_board[0][ROWS], 1)
         # Black pieces in scoring space
         dh.draw_pieces_in_house(self.screen, x, y + piece_height, board_width, piece_height, self.visual_board[3][ROWS], 3)
+
+        if move_state == 2:
+            insert_plate = decode_plate(self.visual_board[4][ROWS])
+            dh.draw_extra_plate(self.screen, (x + board_width + 30, y + piece_height * 2), insert_plate)
 
     

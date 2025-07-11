@@ -141,3 +141,37 @@ def draw_pieces_in_house(surface, start_x, start_y, width, height, piece_count, 
         pygame.draw.circle(surface, BLACK, (center_x, center_y), radius)
         # Innenfarbe (piece_color)
         pygame.draw.circle(surface, piece_color, (center_x, center_y), radius - border_width)
+
+def draw_extra_plate(surface, top_left_pos, plate_tuple):
+    """
+    Zeichnet das extra Teil (zwei Felder nebeneinander) rechts neben dem Board.
+    
+    :param surface: Das pygame Surface.
+    :param top_left_pos: (x, y) Position oben links.
+    :param tile_tuple: Tupel (a, b), wobei a und b 0 oder -1 sein können.
+    """
+    x, y = top_left_pos
+
+    # Gesamtabmessungen des Teils (zwei Felder + Rahmen außen herum)
+    total_width = 2 * (PIECE_SIZE + BORDER_SIZE * 2)
+    total_height = PIECE_SIZE + BORDER_SIZE * 2
+
+    # Zeichne äußeren Rahmen
+    draw_rect_with_border(
+        surface,
+        (x, y, total_width, total_height),
+        fill_color=FOREGROUND_ACCENT_2,
+        border_color=WHITE,
+        border_width=3
+    )
+
+    # Zeichne die zwei Felder nacheinander
+    for i in range(2):
+        value = plate_tuple[i]
+        field_x = x + i * (PIECE_SIZE + BORDER_SIZE * 2) + BORDER_SIZE
+        field_y = y + BORDER_SIZE
+
+        if value == -1:
+            surface.blit(turtle, (field_x, field_y))
+        else:
+            pygame.draw.rect(surface, FOREGROUND, (field_x, field_y, PIECE_SIZE, PIECE_SIZE))
