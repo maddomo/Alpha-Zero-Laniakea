@@ -44,7 +44,17 @@ class Board():
          # (6 plates removed from none, as they are added in each row before adding the rest)
         self.plates = [5, 12, 5]    # two turtles, one turtle, no turtle
         if not randomize:
-            self.board = np.zeros((8, 7), dtype=int)
+            self.board = np.array([
+                [0, 0, -1, 0, 0, 0, 8],
+                [0, 0, 0, 0, -1, -1, 8],
+                [0, -1, -1, 0, 0, 0, 0],
+                [0, -1, 0, 0, -1, 0, 0],
+                [0, -1, 0, -1, 0, 0, 3],
+                [0, -1, 0, 0, -1, -1, None],
+                [-1, 0, -1, 0, 0, -1, None],
+                [-1, -1, -1, 0, 0, -1, None]
+            ], dtype=object)  # dtype=object, um auch None zu erlauben
+            self.lastMove = (None, None)
             return
         
         # Randomized setup
