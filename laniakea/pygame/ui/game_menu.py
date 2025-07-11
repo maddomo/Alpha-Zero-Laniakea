@@ -1,4 +1,4 @@
-from ...LaniakeaHelper import decode_stack
+from ...LaniakeaHelper import decode_stack, encode_stack
 from ..consts import *
 from .menu import Menu
 from .. import drawhelper as dh
@@ -13,16 +13,13 @@ class GameMenu(Menu):
     def __init__(self, screen, swap_menu):
         super().__init__(screen, swap_menu)
         self.board = Board()
+        self.visual_board = self.board
         self.selected_field = None
         self.possible_moves = []
         self.current_player = 1
         self.first_move = None
         self.second_move = None
         self.selected_row = None
-        self.white_homepieces = self.board[0][ROWS]
-        self.black_homepieces = self.board[1][ROWS]
-        self.white_scorepieces = self.board[2][ROWS]
-        self.black_scorepieces = self.board[3][ROWS]
 
     def draw_screen(self):
 
@@ -65,7 +62,7 @@ class GameMenu(Menu):
             if self.current_player == 1:
                 field = (-1, -1)
 
-        # Wenn nichts relevantes geklickt wurde → abbrechen
+        # Wenn nichts relevantes geklickt wurde, abbrechen
         if field is None:
             return
 
@@ -80,42 +77,26 @@ class GameMenu(Menu):
             self.set_selected_field(field)
             return
 
-        stack = self.board[field[0]][field[1]]
+        stack = self.visual_board[field[0]][field[1]]
 
         # Klick auf eigenes Piece oder zweiter Klick auf vorheriges Zielfeld
         if self.stack_top_matches_player(stack, self.current_player) or (self.first_move is not None and field == self.first_move[1]):
             if field in filtered_possible_moves:
                 if move_state == 0:
-                    self.set_first_move(self.selected_field, field)
+                    self.set_move(self.selected_field, field, 1)
                 elif move_state == 1:
-                    self.set_second_move(self.selected_field, field)
+                    self.set_move(self.selected_field, field, 2)
             else:
                 self.set_selected_field(field)
         elif field in filtered_possible_moves:
             if move_state == 0:
-                self.set_first_move(self.selected_field, field)
+                self.set_move(self.selected_field, field, 1)
             elif move_state == 1:
-                self.set_second_move(self.selected_field, field)
+                self.set_move(self.selected_field, field, 2)
         
     def stack_top_matches_player(self, stack, current_player):
         decoded = decode_stack(stack)
         return decoded and decoded[-1] == current_player
-    
-    def get_legal_moves_for_piece(self, piece):
-        """
-        Gibt alle Zielpositionen (x, y) zurück, zu denen ein Spielstein
-        vom Feld `selected_field` (x, y) aus ziehen kann.
-        """
-        all_moves = self.board.get_legal_moves(self.current_player)
-        x, y = piece
-        result = []
-
-        for move in all_moves:
-            from_pos, to_pos, _ = move
-            if from_pos == (x, y):
-                result.append(to_pos)
-
-        return result
     
     def set_selected_field(self, field):
         self.selected_field = field
@@ -136,14 +117,51 @@ class GameMenu(Menu):
         if self.selected_row == None:
             return 2
     
-    def set_first_move(self, from_field, to_field):
-        if from_field == (-1,-1):
-            if self.current_player == 1:
-                self.white_homepieces -= 1
-            else: 
-                self.black_homepieces -= 1
+    def set_move(self, from_field, to_field, move_num):
+        """
+        move_num: 1 für den ersten Move, 2 für den zweiten
+        """
+        color = 1 if self.current_player == 1 else -1
+        player_home = 0 if color == 1 else 1
 
-        self.first_move = (from_field, to_field)
+        if from_field == (-1, -1):
+            # Move from home
+            x, y = to_field
+            stack = decode_stack(self.visual_board[x][y])
+            stack.append(color)
+            self.visual_board[x][y] = encode_stack(stack)
+            self.visual_board[player_home][y]
+        else:
+            x1, y1 = from_field
+            x2, y2 = to_field
+
+            # Remove top piece from stack
+            from_stack = decode_stack(self.visual_board[x1][y1])
+            piece = from_stack.pop()
+            self.visual_board[x1][y1] = encode_stack(from_stack)
+
+            if to_field == (-2,-2):
+                # Scoring Move
+                #print("SCORED Player", color, "has scored\n")
+                self.visual_board[2 + player_home][6] += 1
+                #print(f"Moved piece from ({x1}, {y1}) to scoring area")
+                #print(self.board[2 + player_home][6], "pieces in scoring area")
+                
+            elif to_field == (-1,-1):
+                # Back Home
+                self.visual_board[player_home][6] += 1
+                
+            else:
+                # Normal Move
+                to_stack = decode_stack(self.visual_board[x2][y2])
+                to_stack.append(piece)
+                self.visual_board[x2][y2] = encode_stack(to_stack)
+
+        if move_num == 1:
+            self.first_move = (from_field, to_field)
+        else: 
+            self.second_move = (from_field, to_field)
+        
         self.selected_field = None
 
     def set_second_move(self, from_field, to_field):
@@ -176,13 +194,10 @@ class GameMenu(Menu):
         # move hat Struktur: (start_coord, end_coord, move_list)
         if len(move) != 3:
             return []  # Absicherung, falls Struktur nicht stimmt
-        
         _, _, move_list = move
-        
         # move_list ist eine Liste von Tupeln mit Struktur: (start_field, end_field, weitere Daten)
         # Wir wollen alle end_field, bei denen start_field == selected_field ist
         to_positions = [to_pos for from_pos, to_pos, _ in move_list if from_pos == self.selected_field]
-        print(to_positions)
         return to_positions
 
 
@@ -206,9 +221,9 @@ class GameMenu(Menu):
         else:
             dh.draw_rect_with_border(self.screen, (x, y, board_width, piece_height * 2), FOREGROUND, FOREGROUND_ACCENT_2, 2)
         # Black pieces in black's home space
-        dh.draw_pieces_in_house(self.screen, x, y + piece_height, board_width, piece_height, self.black_homepieces, 3)
+        dh.draw_pieces_in_house(self.screen, x, y + piece_height, board_width, piece_height, self.visual_board[1][ROWS], 3)
         # White pieces in scoring space
-        dh.draw_pieces_in_house(self.screen, x, y, board_width, piece_height, self.white_scorepieces, 1)
+        dh.draw_pieces_in_house(self.screen, x, y, board_width, piece_height, self.visual_board[2][ROWS], 1)
 
         y += piece_height * 2
 
@@ -225,11 +240,11 @@ class GameMenu(Menu):
             for offset_x in range(COLS):
                 board_y = 5 - offset_y  # Invertiere y, sodass 0 = unten
                 if (self.selected_field == (offset_x, board_y)):
-                    dh.draw_laniakea_piece(self.screen, self.board[offset_x][board_y], (x + offset_x * piece_width, y + offset_y * piece_height), 1)
+                    dh.draw_laniakea_piece(self.screen, self.visual_board[offset_x][board_y], (x + offset_x * piece_width, y + offset_y * piece_height), 1)
                 elif ((offset_x, board_y) in filtered_possible_moves):
-                    dh.draw_laniakea_piece(self.screen, self.board[offset_x][board_y], (x + offset_x * piece_width, y + offset_y * piece_height), 2)
+                    dh.draw_laniakea_piece(self.screen, self.visual_board[offset_x][board_y], (x + offset_x * piece_width, y + offset_y * piece_height), 2)
                 else:
-                    dh.draw_laniakea_piece(self.screen, self.board[offset_x][board_y], (x + offset_x * piece_width, y + offset_y * piece_height), 0)
+                    dh.draw_laniakea_piece(self.screen, self.visual_board[offset_x][board_y], (x + offset_x * piece_width, y + offset_y * piece_height), 0)
 
         
         y += piece_height * 6
@@ -240,8 +255,8 @@ class GameMenu(Menu):
         else:
             dh.draw_rect_with_border(self.screen, (x, y, board_width, piece_height * 2), FOREGROUND, FOREGROUND_ACCENT_2, 2)
         # White pieces in white's home space
-        dh.draw_pieces_in_house(self.screen, x, y, board_width, piece_height, self.white_homepieces, 1)
+        dh.draw_pieces_in_house(self.screen, x, y, board_width, piece_height, self.visual_board[0][ROWS], 1)
         # Black pieces in scoring space
-        dh.draw_pieces_in_house(self.screen, x, y + piece_height, board_width, piece_height, self.black_scorepieces, 3)
+        dh.draw_pieces_in_house(self.screen, x, y + piece_height, board_width, piece_height, self.visual_board[3][ROWS], 3)
 
     
