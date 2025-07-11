@@ -28,6 +28,7 @@ class MainMenu(Menu):
 
 
     def draw_screen(self):
+        self.screen.fill(BACKGROUND)
         text_width = self.text_surface.get_rect().width
         self.screen.blit(self.text_surface, (SCREEN_WIDTH / 2 - text_width / 2, 50))
         super().draw_screen()

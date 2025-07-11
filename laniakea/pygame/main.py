@@ -12,7 +12,7 @@ pygame.init()
 # 1 = WHITE, -1 = BLACK
 current_player = 1
 
-
+clock = pygame.time.Clock()
 
 screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 dh.init_images()
@@ -78,6 +78,8 @@ while running:
 
     # Flip the display
     pygame.display.flip()
+
+    clock.tick(60)
 
 # Done! Time to quit.
 pygame.quit()

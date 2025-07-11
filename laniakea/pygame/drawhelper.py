@@ -5,14 +5,18 @@ from ..LaniakeaHelper import decode_stack
 from .consts import *
 
 turtle = None
-
-
+arrow_right, arrow_left = None, None
 
 
 def init_images():
-    global turtle
+    global turtle, arrow_right, arrow_left
     turtle = pygame.image.load("./assets/turtle.png").convert_alpha()
     turtle = pygame.transform.scale(turtle, (80, 80))
+    arrow_right = pygame.image.load("./assets/arrow.png").convert_alpha()
+    arrow_right = pygame.transform.scale(arrow_right, (80, 80))
+    arrow_left = pygame.transform.rotate(arrow_right, 180)
+
+
 
 
 
@@ -42,7 +46,7 @@ def draw_rect_with_border(surface, rect, fill_color, border_color, border_width)
 # 0: false
 # 1: piece selected
 # 2: possible move field
-def draw_laniakea_piece(surface, stack_value, location, field_type):
+def draw_laniakea_piece(surface, stack_value, location, color):
     global turtle
     x = location[0]
     y = location[1]
@@ -62,12 +66,7 @@ def draw_laniakea_piece(surface, stack_value, location, field_type):
         surface.blit(turtle, (x, y))
         return
     
-    if(field_type == 1):
-        pygame.draw.rect(surface, SELECTED_COLOR, (x, y, PIECE_SIZE, PIECE_SIZE))
-    elif(field_type == 2):
-        pygame.draw.rect(surface, MOVE_COLOR, (x, y, PIECE_SIZE, PIECE_SIZE))
-    else:
-        pygame.draw.rect(surface, FOREGROUND, (x, y, PIECE_SIZE, PIECE_SIZE))
+    pygame.draw.rect(surface, color, (x, y, PIECE_SIZE, PIECE_SIZE))
 
     stack = decode_stack(stack_value)
     n = len(stack)
@@ -175,3 +174,14 @@ def draw_extra_plate(surface, top_left_pos, plate_tuple):
             surface.blit(turtle, (field_x, field_y))
         else:
             pygame.draw.rect(surface, FOREGROUND, (field_x, field_y, PIECE_SIZE, PIECE_SIZE))
+
+def draw_arrow(surface, pos, right=True):
+    """
+    Zeichnet einen Pfeil auf das Surface.
+    
+    :param surface: Das pygame Surface.
+    :param pos: (x, y) Position des Pfeils.
+    :param direction: 'right' oder 'left'.
+    """
+    
+    surface.blit(arrow_right if right else arrow_left, pos)
