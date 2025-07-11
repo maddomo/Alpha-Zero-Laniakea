@@ -44,9 +44,6 @@ class Board():
          # (6 plates removed from none, as they are added in each row before adding the rest)
         self.plates = [5, 12, 5]    # two turtles, one turtle, no turtle
         if not randomize:
-<<<<<<< Updated upstream
-            self.board = np.zeros((8, 7), dtype=int)
-=======
             self.board = np.array([
                 [0, 0, -1, 0, 0, 0, 8],
                 [0, 0, 0, 0, -1, -1, 8],
@@ -58,7 +55,6 @@ class Board():
                 [-1, -1, -1, 0, 0, -1, None]
             ], dtype=object)  # dtype=object, um auch None zu erlauben
             self.lastMove = (None, None)
->>>>>>> Stashed changes
             return
         
         # Randomized setup
@@ -200,11 +196,7 @@ class Board():
         into the endzone of the opponent or if the opponent doesn't have any moves left
         @param color (1=white,-1=black)
         """
-<<<<<<< Updated upstream
-        is_in_endzone = self.board[2 + (0 if color == 1 else 1)][6] == 2
-=======
         is_in_endzone = self.board[2 + (0 if color == 1 else 1)][6] == 1
->>>>>>> Stashed changes
 
         no_moves_left = not self.has_legal_moves(-color)
         return is_in_endzone or (no_moves_left)
