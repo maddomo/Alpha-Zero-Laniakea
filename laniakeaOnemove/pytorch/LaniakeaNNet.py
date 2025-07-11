@@ -16,25 +16,17 @@ class LaniakeaNNet(nn.Module):
         # ──────────────── convolutional trunk ────────────────
         self.conv1 = nn.Conv2d(self.board_z, c, kernel_size=3, stride=1, padding=1)
         self.conv2 = nn.Conv2d(c, c, kernel_size=3, stride=1, padding=1)
-<<<<<<< Updated upstream
-        self.conv3 = nn.Conv2d(c, c, kernel_size=3, stride=1, padding=0)
-        self.conv4 = nn.Conv2d(c, c, kernel_size=3, stride=1, padding=0)
-=======
         self.conv3 = nn.Conv2d(c, c, kernel_size=3, stride=1, padding=1)
         self.conv4 = nn.Conv2d(c, c, kernel_size=3, stride=1, padding=1)
         self.conv5 = nn.Conv2d(c, c, kernel_size=3, stride=1, padding=1)
         self.conv6 = nn.Conv2d(c, c, kernel_size=3, stride=1, padding=1)
->>>>>>> Stashed changes
 
         self.bn1 = nn.BatchNorm2d(c)
         self.bn2 = nn.BatchNorm2d(c)
         self.bn3 = nn.BatchNorm2d(c)
         self.bn4 = nn.BatchNorm2d(c)
-<<<<<<< Updated upstream
-=======
         self.bn5 = nn.BatchNorm2d(c)
         self.bn6 = nn.BatchNorm2d(c)
->>>>>>> Stashed changes
 
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
 
@@ -45,13 +37,6 @@ class LaniakeaNNet(nn.Module):
             self.linear_input_size = x.reshape(1, -1).size(1)
 
         # ──────────────── fully connected head ────────────────
-<<<<<<< Updated upstream
-        self.fc1 = nn.Linear(self.linear_input_size, 256)
-        self.fc_bn1 = nn.BatchNorm1d(256)
-
-        self.fc2 = nn.Linear(256, 128)
-        self.fc_bn2 = nn.BatchNorm1d(128)
-=======
         self.fc1 = nn.Linear(self.linear_input_size, 1024)
         self.fc_bn1 = nn.BatchNorm1d(1024)
 
@@ -63,25 +48,17 @@ class LaniakeaNNet(nn.Module):
 
         self.fc4 = nn.Linear(256, 128)
         self.fc_bn4 = nn.BatchNorm1d(128)
->>>>>>> Stashed changes
 
         self.fc_pi = nn.Linear(128, self.action_size)
         self.fc_v = nn.Linear(128, 1)
 
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
     def _forward_conv(self, s):
         s = F.relu(self.bn1(self.conv1(s)))
         s = F.relu(self.bn2(self.conv2(s)))
         s = F.relu(self.bn3(self.conv3(s)))
         s = F.relu(self.bn4(self.conv4(s)))
-<<<<<<< Updated upstream
-=======
         s = F.relu(self.bn5(self.conv5(s)))
         s = F.relu(self.bn6(self.conv6(s)))
->>>>>>> Stashed changes
         s = self.pool(s)
         return s
 
@@ -95,16 +72,10 @@ class LaniakeaNNet(nn.Module):
 
         s = self._forward_conv(s)
         s = s.reshape(s.size(0), -1)  # statt .view() → robust
-<<<<<<< Updated upstream
-
-        s = F.dropout(F.relu(self.fc_bn1(self.fc1(s))), p=self.args.dropout, training=self.training)
-        s = F.dropout(F.relu(self.fc_bn2(self.fc2(s))), p=self.args.dropout, training=self.training)
-=======
         s = F.dropout(F.relu(self.fc_bn1(self.fc1(s))), p=self.args.dropout, training=self.training)
         s = F.dropout(F.relu(self.fc_bn2(self.fc2(s))), p=self.args.dropout, training=self.training)
         s = F.dropout(F.relu(self.fc_bn3(self.fc3(s))), p=self.args.dropout, training=self.training)
         s = F.dropout(F.relu(self.fc_bn4(self.fc4(s))), p=self.args.dropout, training=self.training)
->>>>>>> Stashed changes
 
         pi = self.fc_pi(s)
         v = self.fc_v(s)
