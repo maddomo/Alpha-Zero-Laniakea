@@ -6,18 +6,22 @@ from .consts import *
 
 turtle = None
 arrow_right, arrow_left = None, None
+logo = None
+bg = None
 
+rect_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
 
 def init_images():
-    global turtle, arrow_right, arrow_left
+    global turtle, arrow_right, arrow_left, logo, bg
     turtle = pygame.image.load("./assets/turtle.png").convert_alpha()
     turtle = pygame.transform.scale(turtle, (80, 80))
     arrow_right = pygame.image.load("./assets/arrow.png").convert_alpha()
     arrow_right = pygame.transform.scale(arrow_right, (80, 80))
     arrow_left = pygame.transform.rotate(arrow_right, 180)
-
-
-
+    logo = pygame.image.load("./assets/logo.png").convert_alpha()
+    logo = pygame.transform.scale(logo, (300, 300))
+    bg = pygame.image.load("./assets/bg.png").convert()
+    bg = pygame.transform.scale(bg, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 
 def draw_rect_with_border(surface, rect, fill_color, border_color, border_width):

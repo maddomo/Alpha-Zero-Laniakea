@@ -3,14 +3,14 @@ from ...LaniakeaHelper import decode_stack, encode_stack, decode_plate, encode_a
 from ..consts import *
 from .menu import Menu
 from .. import drawhelper as dh
-from ...LaniakeaLogic import Board
+from laniakeaOnemove.LaniakeaLogic import Board
 import pygame
 import copy
 
 ROWS = 6
 COLS = 8
 
-class GameMenu(Menu):
+class GameMenuOne(Menu):
 
     def __init__(self, screen, swap_menu):
         super().__init__(screen, swap_menu)
@@ -19,7 +19,6 @@ class GameMenu(Menu):
         self.selected_field = None
         self.current_player = 1
         self.first_move = None
-        self.second_move = None
         self.selected_row = None
         self.possible_moves = self.board.get_legal_moves(self.current_player)
         self.tick = 0
@@ -92,13 +91,11 @@ class GameMenu(Menu):
 
         if move_state == 0:
             filtered_possible_moves = self.filter_possible_first_moves()
-        elif move_state == 1:
-            filtered_possible_moves = self.filter_possible_second_moves()
         else: filtered_possible_moves = []
 
         # Wenn außerhalb des Feldes geklickt wurde
         if field is None:
-            if move_state == 2:
+            if move_state == 1:
                 insert_moves = self.filter_possible_insert_moves()
                 for insert_move in insert_moves:
                     x = SCREEN_WIDTH / 2 - BOARD_WIDTH / 2 - PIECE_WIDTH + (PIECE_WIDTH * 9 * (insert_move // 6))
@@ -123,17 +120,12 @@ class GameMenu(Menu):
         if self.stack_top_matches_player(stack, self.current_player) or (self.first_move is not None and field == self.first_move[1]):
             if field in filtered_possible_moves:
                 if move_state == 0:
-                    self.set_move(self.selected_field, field, 1)
-                elif move_state == 1:
-                    self.set_move(self.selected_field, field, 2)
+                    self.set_move(self.selected_field, field)
             else:
                 self.set_selected_field(field)
         elif field in filtered_possible_moves:
             if move_state == 0:
-                self.set_move(self.selected_field, field, 1)
-            elif move_state == 1:
-                self.set_move(self.selected_field, field, 2)
-
+                self.set_move(self.selected_field, field)
         
 
         
@@ -149,17 +141,14 @@ class GameMenu(Menu):
         """
         Gibt den aktuellen Status des Zuges für den aktuellen Spieler zurück.
         0: Spieler hat noch keinen ersten Zug ausgewählt
-        1: Spieler hat ersten Zug ausgewählt, aber noch keinen zweiten
-        2: Spieler hat beide Züge ausgewählt, aber noch keine Reihe zum Teil einschieben
+        1: Spieler hat beide Züge ausgewählt, aber noch keine Reihe zum Teil einschieben
         """
         if self.first_move == None:
             return 0
-        if self.second_move == None:
-            return 1
         if self.selected_row == None:
-            return 2
+            return 1
     
-    def set_move(self, from_field, to_field, move_num):
+    def set_move(self, from_field, to_field):
         """
         move_num: 1 für den ersten Move, 2 für den zweiten
         """
@@ -199,32 +188,19 @@ class GameMenu(Menu):
                 to_stack.append(piece)
                 self.visual_board[x2][y2] = encode_stack(to_stack)
 
-        if move_num == 1:
-            self.first_move = (from_field, to_field)
-        else: 
-            self.second_move = (from_field, to_field)
-            if to_field == (-1, -1):
-                self.selected_row = 12
-                self.complete_move()
+        self.first_move = (from_field, to_field)
+        if to_field == (-1, -1):
+            self.selected_row = 12
+            self.complete_move()
+            
         
         self.selected_field = None
 
-
-    def set_second_move(self, from_field, to_field):
-        if from_field == -1:
-            if self.current_player == 1:
-                self.white_homepieces -= 1
-            else: 
-                self.black_homepieces -= 1
-        self.second_move = (from_field, to_field)
-        self.selected_field = None
-
     def complete_move(self):
-        self.board.execute_move(((self.first_move, self.second_move), self.selected_row), self.current_player)
+        self.board.execute_move((self.first_move, self.selected_row), self.current_player)
         self.visual_board = copy.deepcopy(self.board)
         self.selected_field = None
         self.first_move = None
-        self.second_move = None
         self.selected_row = None
         if self.board.is_win(self.current_player):
             self.who_won = 0 if self.current_player == 1 else 1
@@ -235,29 +211,11 @@ class GameMenu(Menu):
         filtered_list = [n[1] for n in self.possible_moves if n[0] == self.selected_field]
         return filtered_list
     
-    def filter_possible_second_moves(self):
-        index = -1
-        for i, move in enumerate(self.possible_moves):
-            if move[0] == self.first_move[0] and move[1] == self.first_move[1]:
-                index = i
-
-        move = self.possible_moves[index]
-        # move hat Struktur: (start_coord, end_coord, move_list)
-        if len(move) != 3:
-            return []  # Absicherung, falls Struktur nicht stimmt
-        _, _, move_list = move
-        # move_list ist eine Liste von Tupeln mit Struktur: (start_field, end_field, weitere Daten)
-        # Wir wollen alle end_field, bei denen start_field == selected_field ist
-        to_positions = [to_pos for from_pos, to_pos, _ in move_list if from_pos == self.selected_field]
-        return to_positions
-    
     def filter_possible_insert_moves(self):
-        if self.first_move is None or self.second_move is None:
+        if self.first_move is None:
             return []
         
-        filtered_list = [n[2] for n in self.possible_moves if n[0] == self.first_move[0] and n[1] == self.first_move[1]][0]
-        second_list = [n[2] for n in filtered_list if n[0] == self.second_move[0] and n[1] == self.second_move[1]][0]
-        return second_list
+        return [n[2] for n in self.possible_moves if n[0] == self.first_move[0] and n[1] == self.first_move[1]][0]
 
 
     def draw_board_helper(self):
@@ -265,9 +223,7 @@ class GameMenu(Menu):
         move_state = self.get_move_state()
 
         if move_state == 0:
-            filtered_possible_moves = self.filter_possible_first_moves()
-        elif move_state == 1:
-            filtered_possible_moves = self.filter_possible_second_moves()
+            filtered_possible_moves = self.filter_possible_first_moves()            
         else: filtered_possible_moves = []
 
         if (-1, -1) in filtered_possible_moves:
@@ -330,7 +286,7 @@ class GameMenu(Menu):
         dh.draw_extra_plate(self.screen, (10, 10), insert_plate)
 
 
-        if move_state == 2:
+        if move_state == 1:
             list = self.filter_possible_insert_moves()
             for num in list:
                 x = SCREEN_WIDTH / 2 - BOARD_WIDTH / 2 - PIECE_WIDTH + (PIECE_WIDTH * 9 * (num // 6))
@@ -343,7 +299,7 @@ class GameMenu(Menu):
         
 
     def get_field_color(self, pos, filtered_possible_moves): 
-        if (self.first_move is not None and pos in self.first_move) or (self.second_move is not None and pos in self.second_move):
+        if (self.first_move is not None and pos in self.first_move):
             return FOREGROUND_ACCENT_1
         if self.selected_field == pos:
             return SELECTED_COLOR

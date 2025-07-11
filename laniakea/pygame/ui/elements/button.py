@@ -4,7 +4,7 @@ from ...fonthelper import get_font
 from .element import Element
 from ...consts import *
 
-base_padding = 0.25
+base_padding = 0.5
 
 
 

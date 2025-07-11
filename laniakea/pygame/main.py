@@ -49,7 +49,6 @@ def get_legal_moves_for_piece(piece):
     
 
 
-screen.fill(BACKGROUND)
 
 # Draw a solid blue circle in the center
 #pygame.draw.circle(screen, (0, 0, 255), (250, 250), 75)
