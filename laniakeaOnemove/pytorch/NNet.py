@@ -23,8 +23,13 @@ args = dotdict(
     {
         "lr": 0.001,
         "dropout": 0.3,
+<<<<<<< Updated upstream
         "epochs": 10,
         "batch_size": 64,
+=======
+        "epochs": 16,
+        "batch_size": 512,
+>>>>>>> Stashed changes
         "cuda": torch.cuda.is_available(),
         "num_channels": 512,
     }

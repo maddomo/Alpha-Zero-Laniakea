@@ -21,7 +21,11 @@ class LaniakeaGame(Game):
 
     def getInitBoard(self):
         # return initial board (numpy board)
+<<<<<<< Updated upstream
         return board_to_tensor(Board(), 1)
+=======
+        return board_to_tensor(Board(False), 1)
+>>>>>>> Stashed changes
 
     def getBoardSize(self):
         # Tensor dimension
