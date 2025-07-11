@@ -52,9 +52,11 @@ class Coach():
 
         while True:
             episodeStep += 1
-            if episodeStep >= 500:
-                print(f"Abbruch: Episode überschreitet 500 Züge – vermutlich kein Ende erreichbar.")
-                return []
+            #Bei über 200 Zügen brechen wir wegen dem Arbeitsspeicher ab, es wird dann ein schlechtes ergebnis returnt.
+            if episodeStep >= 200:
+                print(f"Abbruch: Episode überschreitet 200 Züge – vermutlich kein Ende erreichbar, schlechtes ergebnis returnen.")
+                return [(x[0], x[2], -1 * ((-1) ** (x[1] != self.curPlayer))) for x in trainExamples]
+            
             canonicalBoard = self.game.getCanonicalForm(board, self.curPlayer)
             temp = int(episodeStep < self.args.tempThreshold)
 
@@ -63,12 +65,11 @@ class Coach():
 
             sym = self.game.getSymmetries(canonicalBoard, pi)
             for b, p in sym:
-                p_sparse = [(i, float(v)) for i, v in enumerate(p) if v > 1e-6]
-                trainExamples.append([b, self.curPlayer, p_sparse, None])
+                trainExamples.append([b, self.curPlayer, p, None])
 
             action = np.random.choice(len(pi), p=pi)
             board, self.curPlayer = self.game.getNextState(board, self.curPlayer, action)
-            print(f"Episode step {episodeStep} for player {self.curPlayer} with action {action} with board:\n{self.game.boardToString(board)}")
+            #print(f"Episode step {episodeStep} for player {self.curPlayer} with action {action} with board:\n{self.game.boardToString(board)}")
             r = self.game.getGameEnded(board, self.curPlayer)
 
             if r != 0:
@@ -117,11 +118,19 @@ class Coach():
             pmcts = MCTS(self.game, self.pnet, self.args)
 
             self.nnet.train(trainExamples)
+            #Nur fürs aller erste training, damit wir mal eine haben
+            #if(i <= 1):
+             #   log.info(f"Auto-accepting model in early iteration {i}")
+              #  self.nnet.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
+               # self.nnet.save_checkpoint(folder=self.args.checkpoint, filename='best.pth.tar')
+                #continue
+
+            pmcts = MCTS(self.game, self.pnet, self.args)
             nmcts = MCTS(self.game, self.nnet, self.args)
 
             log.info('PITTING AGAINST PREVIOUS VERSION')
             arena = Arena(lambda x: np.argmax(pmcts.getActionProb(x, temp=0)),
-                          lambda x: np.argmax(nmcts.getActionProb(x, temp=0)), self.game)
+                          lambda x: np.argmax(nmcts.getActionProb(x, temp=0)), self.game, self.game.display)
             pwins, nwins, draws = arena.playGames(self.args.arenaCompare)
 
             log.info('NEW/PREV WINS : %d / %d ; DRAWS : %d' % (nwins, pwins, draws))

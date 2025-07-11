@@ -44,7 +44,17 @@ class Board():
          # (6 plates removed from none, as they are added in each row before adding the rest)
         self.plates = [5, 12, 5]    # two turtles, one turtle, no turtle
         if not randomize:
-            self.board = np.zeros((8, 7), dtype=int)
+            self.board = np.array([
+                [0, 0, -1, 0, 0, 0, 8],
+                [0, 0, 0, 0, -1, -1, 8],
+                [0, -1, -1, 0, 0, 0, 0],
+                [0, -1, 0, 0, -1, 0, 0],
+                [0, -1, 0, -1, 0, 0, 3],
+                [0, -1, 0, 0, -1, -1, None],
+                [-1, 0, -1, 0, 0, -1, None],
+                [-1, -1, -1, 0, 0, -1, None]
+            ], dtype=object)  # dtype=object, um auch None zu erlauben
+            self.lastMove = (None, None)
             return
         
         # Randomized setup
@@ -255,7 +265,7 @@ class Board():
         into the endzone of the opponent or if the opponent doesn't have any moves left
         @param color (1=white,-1=black)
         """
-        is_in_endzone = self.board[2 + (0 if color == 1 else 1)][6] == 3
+        is_in_endzone = self.board[2 + (0 if color == 1 else 1)][6] == 1
 
         opp_has_moves_left = self.has_legal_moves(-color)
 
@@ -305,8 +315,8 @@ class Board():
                     to_stack = decode_stack(self.board[x2][y2])
                     to_stack.append(piece)
                     self.board[x2][y2] = encode_stack(to_stack)
-                 
-        self.insert_plate_into_row(insert_row)
+        if (insert_row < 12):
+            self.insert_plate_into_row(insert_row)
         #print("Board after move:\n", self.board)
 
 

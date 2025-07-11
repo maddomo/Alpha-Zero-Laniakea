@@ -27,7 +27,7 @@ class Arena():
         self.game = game
         self.display = display
 
-    def playGame(self, verbose=False):
+    def playGame(self, verbose=True):
         """
         Executes one episode of a game.
 
@@ -48,6 +48,10 @@ class Arena():
 
         while self.game.getGameEnded(board, curPlayer) == 0:
             it += 1
+            if(it > 250):
+                log.warning(f"Aborting: Episode exceeded 250 turns – likely no end reachable, returning bad result.")
+                return 0
+
             if verbose:
                 assert self.display
                 print("Turn ", str(it), "Player ", str(curPlayer))

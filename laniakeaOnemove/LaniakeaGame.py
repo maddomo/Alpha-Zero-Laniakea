@@ -3,7 +3,7 @@ import sys
 sys.path.append('..')
 from Game import Game
 from .LaniakeaLogic import Board
-from .LaniakeaHelper import ACTION_SIZE, decode_action, encode_action, decode_stack, mirror_action
+from .LaniakeaHelper import ACTION_SIZE, decode_action, encode_action, decode_stack, mirror_action, encode_stack
 from .LaniakeaBoardConverter import board_to_tensor, tensor_to_board
 import numpy as np
 import random
@@ -21,7 +21,7 @@ class LaniakeaGame(Game):
 
     def getInitBoard(self):
         # return initial board (numpy board)
-        return board_to_tensor(Board(False), 1)
+        return board_to_tensor(Board(), 1)
 
     def getBoardSize(self):
         # Tensor dimension
@@ -43,20 +43,23 @@ class LaniakeaGame(Game):
         return ACTION_SIZE 
 
     def getNextState(self, board, player, action):
-        # if player takes action on board, return next (board,player)
-        # action must be a valid move
-        b = tensor_to_board(board)
+        b = tensor_to_board(board)  
+
         if action == -1:
             random_move = random.choice(b.get_legal_moves(player))
-            from_pos1, to_pos1, from_pos2, to_pos2, insert_rows = random_move
+            from_pos, to_pos, insert_rows = random_move
             if(len(insert_rows) > 0):
                 insert_row = random.choice(insert_rows)
             else:
-                insert_row = 12
-            decoded_action = (from_pos1, to_pos1), (from_pos2, to_pos2), insert_row
+                insert_row = 12 # setze 12 falls nicht da
+
+            decoded_action = ((from_pos, to_pos), insert_row)
+            
+        # if player takes action on board, return next (board,player)
+        # action must be a valid move
         else:
             decoded_action = decode_action(action)
-        # mirror move if player is -1, due to canonical form bullshit
+
         if (player == -1):
             #print(f"Spiegel")
             decoded_action = mirror_action(decoded_action)
@@ -68,34 +71,37 @@ class LaniakeaGame(Game):
         valid_moves = b.get_legal_moves(player)
         valid_actions = np.zeros(self.getActionSize(), dtype=np.int8)
 
-        for first_move in valid_moves:
-            for second_move in first_move[2]:
-                if len(second_move[2]) == 0:
-                    i = encode_action((first_move[0], first_move[1]), (second_move[0], second_move[1]), 12)
-                    valid_actions[i] = 1
-                for insert_row in second_move[2]: 
-                    i = encode_action((first_move[0], first_move[1]), (second_move[0], second_move[1]), insert_row)
-                    valid_actions[i] = 1
+        for move in valid_moves:
+            from_pos, to_pos, insert_rows = move  # Neu: Nur ein Move + Liste an Insert-Zeilen
+            if len(insert_rows) == 0:
+                index = encode_action((from_pos, to_pos), 12)
+                valid_actions[index] = 1
+            for insert_row in insert_rows:
+                index = encode_action((from_pos, to_pos), insert_row)
+                valid_actions[index] = 1
 
         return valid_actions
+
         
     def getGameEnded(self, board, player):
-        # return 0 if not ended, 1 if player 1 won, -1 if player 1 lost
-        # player = 1
+        """
+        Returns:
+            0 if the game is not over
+            1 if the current player (player) has won
+        -1 if the current player has lost
+        """
         b = tensor_to_board(board)
 
         if b.is_win(player):
-            #print(f"Player {player} wins!")
-           # print(b.board)
-           # print(f"\n Player 1 legal moves{b.has_legal_moves(player)}\nPlayer -1 legal moves{b.has_legal_moves(-player)}\n")
             return 1
         if b.is_win(-player):
-            #print(f"Player {-player} wins!")
-            #print(b.board)
-            #print(f"\n Player 1 legal moves{b.has_legal_moves(player)}\nPlayer -1 legal moves{b.has_legal_moves(-player)}\n")
             return -1
-        if b.has_legal_moves(player):
-            return 0
+
+        
+
+        return 0  # Spiel läuft weiter
+
+        
 
 
     def getCanonicalForm(self, board, player):
@@ -161,4 +167,8 @@ class LaniakeaGame(Game):
                 board_str += " "
             board_str += "\n\n\n"
         return board_str
+    
+
+
+
         
