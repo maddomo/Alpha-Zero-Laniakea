@@ -84,30 +84,23 @@ class LaniakeaGame(Game):
 
         
     def getGameEnded(self, board, player):
-        # return 0 if not ended, 1 if player 1 won, -1 if player 1 lost
-        # player = 1
+        """
+        Returns:
+            0 if the game is not over
+            1 if the current player (player) has won
+        -1 if the current player has lost
+        """
         b = tensor_to_board(board)
 
         if b.is_win(player):
-            #print(f"Player {player} wins!")
-           # print(b.board)
-           # print(f"\n Player 1 legal moves{b.has_legal_moves(player)}\nPlayer -1 legal moves{b.has_legal_moves(-player)}\n")
             return 1
         if b.is_win(-player):
-            #print(f"Player {-player} wins!")
-            #print(b.board)
-            #print(f"\n Player 1 legal moves{b.has_legal_moves(player)}\nPlayer -1 legal moves{b.has_legal_moves(-player)}\n")
             return -1
+
         
-        if(not b.has_legal_moves(-player)):
-            print("no legal moves")
-            return 1
-        if(not b.has_legal_moves(player)):
-            print("no legal moves")
-            return -1
-        if b.has_legal_moves(player):
-            return 0
-        return 1e-4
+
+        return 0  # Spiel läuft weiter
+
         
 
 

@@ -7,33 +7,32 @@ class LaniakeaNNet(nn.Module):
     def __init__(self, game, args):
         super().__init__()
 
-        self.board_x, self.board_y, self.board_z = game.getBoardSize()
+        self.board_x, self.board_y, self.board_z = game.getBoardSize()  # x=8, y=6, z=17
         self.action_size = game.getActionSize()
         self.args = args
 
-        c = args.num_channels  # usually 32
+        c = args.num_channels  # z. B. 32
 
-        # ──────────────────────────────────── convolutional trunk ─
-        self.conv1 = nn.Conv3d(1, c, 3, stride=1, padding=1)
-        self.conv2 = nn.Conv3d(c, c, 3, stride=1, padding=1)
-        self.conv3 = nn.Conv3d(c, c, 3, stride=1, padding=0)
-        self.conv4 = nn.Conv3d(c, c, 3, stride=1, padding=0)
+        # ──────────────── convolutional trunk ────────────────
+        self.conv1 = nn.Conv2d(self.board_z, c, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(c, c, kernel_size=3, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(c, c, kernel_size=3, stride=1, padding=0)
+        self.conv4 = nn.Conv2d(c, c, kernel_size=3, stride=1, padding=0)
 
-        self.bn1 = nn.BatchNorm3d(c)
-        self.bn2 = nn.BatchNorm3d(c)
-        self.bn3 = nn.BatchNorm3d(c)
-        self.bn4 = nn.BatchNorm3d(c)
+        self.bn1 = nn.BatchNorm2d(c)
+        self.bn2 = nn.BatchNorm2d(c)
+        self.bn3 = nn.BatchNorm2d(c)
+        self.bn4 = nn.BatchNorm2d(c)
 
-        # Pooling nach convs zum Speicher sparen
-        self.pool = nn.MaxPool3d(kernel_size=2, stride=2)
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
 
-        # Dynamische Berechnung der Flatten-Dimension
+        # ──────────────── dynamische Flatten-Berechnung ────────────────
         with torch.no_grad():
-            dummy = torch.zeros(1, 1, self.board_x, self.board_y, self.board_z)
+            dummy = torch.zeros(1, self.board_z, self.board_x, self.board_y)  # (B, C, H, W)
             x = self._forward_conv(dummy)
-            self.linear_input_size = x.view(1, -1).size(1)
+            self.linear_input_size = x.reshape(1, -1).size(1)
 
-        # ──────────────────────────────────── fully connected ─
+        # ──────────────── fully connected head ────────────────
         self.fc1 = nn.Linear(self.linear_input_size, 256)
         self.fc_bn1 = nn.BatchNorm1d(256)
 
@@ -52,13 +51,15 @@ class LaniakeaNNet(nn.Module):
         return s
 
     def forward(self, s):
-        if s.dim() == 4:
-            s = s.unsqueeze(1)  # (B, 1, x, y, z)
-        elif s.dim() != 5:
-            raise ValueError(f"Expected 4D or 5D tensor, got {s.shape}")
+        # Erwartet (B, 8, 6, 17) oder (B, H, W, C)
+        if s.dim() == 4 and s.shape[-1] == self.board_z:
+            s = s.permute(0, 3, 1, 2)  # → (B, C, H, W)
+        elif s.dim() != 4 or s.shape[1] != self.board_z:
+            raise ValueError(f"Expected (B, 8, 6, 17) or (B, 17, 8, 6), got {s.shape}")
+        
 
         s = self._forward_conv(s)
-        s = s.view(s.size(0), -1)
+        s = s.reshape(s.size(0), -1)  # statt .view() → robust
 
         s = F.dropout(F.relu(self.fc_bn1(self.fc1(s))), p=self.args.dropout, training=self.training)
         s = F.dropout(F.relu(self.fc_bn2(self.fc2(s))), p=self.args.dropout, training=self.training)

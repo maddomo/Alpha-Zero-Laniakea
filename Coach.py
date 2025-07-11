@@ -52,10 +52,7 @@ class Coach():
 
         while True:
             episodeStep += 1
-            #Bei über 200 Zügen brechen wir wegen dem Arbeitsspeicher ab, es wird dann ein schlechtes ergebnis returnt.
-           # if episodeStep >= 1000:
-            #    print(f"Abbruch: Episode überschreitet 1000 Züge – vermutlich kein Ende erreichbar, schlechtes ergebnis returnen.")
-             #   return [(x[0], x[2], -1 * ((-1) ** (x[1] != self.curPlayer))) for x in trainExamples]
+           
             
             canonicalBoard = self.game.getCanonicalForm(board, self.curPlayer)
             temp = int(episodeStep < self.args.tempThreshold)
@@ -71,7 +68,7 @@ class Coach():
             board, self.curPlayer = self.game.getNextState(board, self.curPlayer, action)
             #print(f"Episode step {episodeStep} for player {self.curPlayer} with action {action} with board:\n{self.game.display(board)}")
             r = self.game.getGameEnded(board, self.curPlayer)
-
+            #print(r)
             if r != 0:
                 return [(x[0], x[2], r * ((-1) ** (x[1] != self.curPlayer))) for x in trainExamples]
 

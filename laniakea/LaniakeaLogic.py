@@ -189,7 +189,6 @@ class Board():
         is_in_endzone = self.board[2 + (0 if color == 1 else 1)][6] == 2
 
         no_moves_left = not self.has_legal_moves(-color)
-        
         return is_in_endzone or (no_moves_left)
 
     def execute_move(self, action, color):

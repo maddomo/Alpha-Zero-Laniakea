@@ -74,7 +74,8 @@ class NNetWrapper(NeuralNet):
 
 
                 # Ensure 4‑D shape (B, x, y, z) – the net will unsqueeze chan dim
-                boards_t = boards.view(-1, self.board_x, self.board_y, self.board_z)
+                boards_t = boards.reshape(-1, self.board_x, self.board_y, self.board_z)
+
 
                 if args.cuda:
                     boards_t, pis_t, vs_t = boards_t.contiguous().cuda(), target_pis.contiguous().cuda(), target_vs.contiguous().cuda()
@@ -135,5 +136,5 @@ class NNetWrapper(NeuralNet):
         if not os.path.exists(path):
             raise FileNotFoundError(f"No model in path {path}")
         map_loc = None if args.cuda else "cpu"
-        chkpt = torch.load(path, map_location=map_loc, weights_only=True)
+        chkpt = torch.load(path, map_location=map_loc)
         self.nnet.load_state_dict(chkpt["state_dict"])
