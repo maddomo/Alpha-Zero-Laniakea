@@ -3,8 +3,8 @@ import logging
 import coloredlogs
 
 from Coach import Coach
-from laniakea.LaniakeaGame import LaniakeaGame as Game
-from laniakea.pytorch.NNet import NNetWrapper as nn
+from laniakeaOnemove.LaniakeaGame import LaniakeaGame as Game
+from laniakeaOnemove.pytorch.NNet import NNetWrapper as nn
 from utils import *
 
 
