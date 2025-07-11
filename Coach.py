@@ -49,20 +49,16 @@ class Coach():
         board = self.game.getInitBoard()
         self.curPlayer = 1
         episodeStep = 0
-
+        MAX_EXAMPLES_PER_GAME = 150
         while True:
             episodeStep += 1
-            #Bei über 200 Zügen brechen wir wegen dem Arbeitsspeicher ab, es wird dann ein schlechtes ergebnis returnt.
-            if episodeStep >= 200:
-                print(f"Abbruch: Episode überschreitet 200 Züge – vermutlich kein Ende erreichbar, schlechtes ergebnis returnen.")
-                return [(x[0], x[2], -1 * ((-1) ** (x[1] != self.curPlayer))) for x in trainExamples]
             
             canonicalBoard = self.game.getCanonicalForm(board, self.curPlayer)
             temp = int(episodeStep < self.args.tempThreshold)
 
 
             pi = self.mcts.getActionProb(canonicalBoard, temp=temp)
-
+            
             sym = self.game.getSymmetries(canonicalBoard, pi)
             for b, p in sym:
                 trainExamples.append([b, self.curPlayer, p, None])
@@ -71,7 +67,8 @@ class Coach():
             board, self.curPlayer = self.game.getNextState(board, self.curPlayer, action)
             #print(f"Episode step {episodeStep} for player {self.curPlayer} with action {action} with board:\n{self.game.boardToString(board)}")
             r = self.game.getGameEnded(board, self.curPlayer)
-
+            if len(trainExamples) > MAX_EXAMPLES_PER_GAME:
+                trainExamples = trainExamples[-MAX_EXAMPLES_PER_GAME:]
             if r != 0:
                 return [(x[0], x[2], r * ((-1) ** (x[1] != self.curPlayer))) for x in trainExamples]
 
