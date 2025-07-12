@@ -15,7 +15,7 @@ class GameMenuOne(Menu):
 
     def __init__(self, screen, swap_menu, ai=False):
         super().__init__(screen, swap_menu)
-        self.board = Board()
+        self.board = Board(randomize=False)
         self.visual_board = copy.deepcopy(self.board)
         self.selected_field = None
         self.current_player = 1 # 1 = white, -1 = black
