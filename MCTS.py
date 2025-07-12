@@ -24,7 +24,6 @@ class MCTS():
 
         self.Es = {}  # stores game.getGameEnded ended for board s
         self.Vs = {}  # stores game.getValidMoves for board s
-        self.repetitionCounter = {} # stores the number of times a board has been repeated in the current search
 
     def getActionProb(self, canonicalBoard, temp=1):
         """
@@ -37,7 +36,6 @@ class MCTS():
         """
         for i in range(self.args.numMCTSSims):
             self.search(canonicalBoard)
-            self.repetitionCounter.clear()
 
         s = self.game.stringRepresentation(canonicalBoard)
         counts = [self.Nsa[(s, a)] if (s, a) in self.Nsa else 0 for a in range(self.game.getActionSize())]
@@ -75,15 +73,6 @@ class MCTS():
         """
 
         s = self.game.stringRepresentation(canonicalBoard)
-
-        # Track repetitions
-        if s not in self.repetitionCounter:
-            self.repetitionCounter[s] = 1
-        else:
-            self.repetitionCounter[s] += 1
-            if self.repetitionCounter[s] >= 6:  # Arbitrary threshold to detect cycles
-                log.warning(f"Cycle detected: state repeated {self.repetitionCounter[s]} times. Returning 0.")
-                return 0  # Neutral value to break infinite cycle
 
         if s not in self.Es:
             self.Es[s] = self.game.getGameEnded(canonicalBoard, 1)

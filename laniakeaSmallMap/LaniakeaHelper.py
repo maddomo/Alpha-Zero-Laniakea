@@ -35,7 +35,7 @@ def decode_stack(n):
 from itertools import product
 
 HOME_POS = (-1, -1)
-INSERT_ROWS = 13
+INSERT_ROWS = 11
 #ROTATE_OPTIONS = 2
 SCORING_POS = (-2,-2)
 rows = 5
