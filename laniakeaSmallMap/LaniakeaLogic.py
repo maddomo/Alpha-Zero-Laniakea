@@ -61,7 +61,7 @@ class Board():
     
         board = [[None for _ in range(Board.rows + 1)] for _ in range(Board.cols)]
         for i in range(Board.rows):
-            position = random.randint(0, (Board.cols -2) / 2) * 2
+            position = random.randint(0, (Board.cols -2) // 2) * 2
             board[position][i] = 0
             board[position + 1][i] = 0
         for i in range(Board.rows):
@@ -130,7 +130,7 @@ class Board():
         # Zug aus der Heimatreihe
         if board[player_home][Board.rows] > 0:
             for x in range(Board.cols):
-                y = 0 if color == 1 else Board.cols - 1
+                y = 0 if color == 1 else Board.rows - 1
                 square = board[x][y]
                 if square == -1: continue
                 if (lastPosition is not None and newPosition is not None):

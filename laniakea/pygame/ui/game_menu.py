@@ -24,8 +24,8 @@ class GameMenu(Menu):
         self.possible_moves = self.board.get_legal_moves(self.current_player)
         self.tick = 0
         self.font = get_font(48)
-        self.white_won_text = self.font.render("White has won!", True, "#FFFFFF")
-        self.black_won_text = self.font.render("Black has won!", True, "#FFFFFF")
+        self.white_won_text = self.font.render("Blue has won!", True, "#FFFFFF")
+        self.black_won_text = self.font.render("Orange has won!", True, "#FFFFFF")
         self.who_won = -1  # -1 = no one, 0 = white, 1 = black
         self.won_tick = -1 # -1 = no one has won yet, otherwise the tick when the game was won
 

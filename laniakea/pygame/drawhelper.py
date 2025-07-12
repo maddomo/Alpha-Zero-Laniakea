@@ -106,8 +106,9 @@ def draw_laniakea_piece(surface, stack_value, location, color):
     for i, piece in enumerate(stack):
         center_x = x + PIECE_SIZE // 2
         center_y = bottom_center_y - i * spacing
-        color = WHITE if piece == 1 else BLACK
-        pygame.draw.circle(surface, BLACK, (center_x, int(center_y)), radius)
+        color = PIECE_BLUE if piece == 1 else PIECE_ORANGE
+        surface_color = PIECE_BLUE_SURFACE if piece == 1 else PIECE_ORANGE_SURFACE
+        pygame.draw.circle(surface, surface_color, (center_x, int(center_y)), radius)
         pygame.draw.circle(surface, color, (center_x, int(center_y)), radius - border_width)
 
 
@@ -116,9 +117,12 @@ def draw_pieces_in_house(surface, start_x, start_y, width, height, piece_count, 
         return
     
     if piece_color == 1:
-        piece_color = WHITE
+        piece_color = PIECE_BLUE
+        surface_color = PIECE_BLUE_SURFACE
     elif piece_color == 3:
-        piece_color = BLACK
+        piece_color = PIECE_ORANGE
+        surface_color = PIECE_ORANGE_SURFACE
+    
 
     # Parameter aus draw_laniakea_piece für radius:
     base_diameter = int(height * 0.75)  # Analog PIECE_SIZE * 0.75, hier height als Zellenhöhe
@@ -141,7 +145,7 @@ def draw_pieces_in_house(surface, start_x, start_y, width, height, piece_count, 
     for i in range(piece_count):
         center_x = int(start_x + spacing * i + spacing / 2)
         # Schwarzer Rand
-        pygame.draw.circle(surface, BLACK, (center_x, center_y), radius)
+        pygame.draw.circle(surface, surface_color, (center_x, center_y), radius)
         # Innenfarbe (piece_color)
         pygame.draw.circle(surface, piece_color, (center_x, center_y), radius - border_width)
 
