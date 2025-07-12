@@ -65,7 +65,7 @@ class Coach():
 
             action = np.random.choice(len(pi), p=pi)
             board, self.curPlayer = self.game.getNextState(board, self.curPlayer, action)
-            #print(f"Episode step {episodeStep} for player {self.curPlayer} with action {action} with board:\n{self.game.boardToString(board)}")
+            print(f"Episode step {episodeStep} for player {self.curPlayer} with action {action} with board:\n{self.game.display(board)}")
             r = self.game.getGameEnded(board, self.curPlayer)
             if len(trainExamples) > MAX_EXAMPLES_PER_GAME:
                 trainExamples = trainExamples[-MAX_EXAMPLES_PER_GAME:]
