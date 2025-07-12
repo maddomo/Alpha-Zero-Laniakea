@@ -40,4 +40,4 @@ class MainMenu(Menu):
         self.swap_menu(GameMenu(self.screen, self.swap_menu))
 
     def on_button_click_slimmed(self):
-        self.swap_menu(GameMenuOne(self.screen, self.swap_menu))
+        self.swap_menu(GameMenuOne(self.screen, self.swap_menu, ai=True))
