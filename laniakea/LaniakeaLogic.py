@@ -1,18 +1,12 @@
 '''
-Board class for the game of TicTacToe.
-Default board size is 3x3.
-Board data:
-  1=white(O), -1=black(X), 0=empty
-  first dim is column , 2nd is row:
-     pieces[0][0] is the top left square,
-     pieces[2][0] is the bottom left square,
-Squares are stored and manipulated as (x,y) tuples.
+Board class for the game of Laniakea.
 
-Author: Evgeny Tyurin, github.com/evg-tyurin
-Date: Jan 5, 2018.
+Default board size is 8x6.
 
-Based on the board for the game of Othello by Eric P. Nichols.
-
+Every Move has 3 actions:
+1. Move one piece
+2. Move the same or another piece
+3. Insert an extra tile into a row of the board
 '''
 import random
 import numpy as np

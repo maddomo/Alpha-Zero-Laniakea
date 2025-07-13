@@ -1,3 +1,8 @@
+"""
+Shows buttons for choosing difficulty levels
+and switches to the game menu with the selected option.
+"""
+
 import pygame
 
 from laniakea.pygame.ui.game_menu_one import GameMenuOne

@@ -1,4 +1,7 @@
-
+"""
+Provides a helper function `get_font(font_size)` that returns a cached 
+Pygame font object using a specific font.
+"""
 import pygame
 
 

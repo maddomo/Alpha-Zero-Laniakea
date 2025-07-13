@@ -1,3 +1,6 @@
+"""
+Defines a base Menu class for managing UI elements in a Pygame application.
+"""
 import pygame
 
 
