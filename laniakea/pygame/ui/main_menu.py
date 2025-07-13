@@ -1,6 +1,7 @@
 import pygame
 
 from laniakea.pygame.ui.game_menu_one import GameMenuOne
+from laniakea.pygame.ui.game_menu_small import GameMenuSmall
 
 from .game_menu import GameMenu
 
@@ -25,8 +26,13 @@ class MainMenu(Menu):
         bounds2 = self.button2.get_bounds()
         self.button2.set_pos((SCREEN_WIDTH / 2 - bounds2[0] / 2, 450))
 
+        self.button3 = Button(screen, None, "Player vs Player (small)", 48, self.on_butoon_click_small)
+        bounds3 = self.button3.get_bounds()
+        self.button3.set_pos((SCREEN_WIDTH / 2 - bounds3[0] / 2, 600))
+
         self.elements.append(self.button1)
         self.elements.append(self.button2)
+        self.elements.append(self.button3)
 
 
 
@@ -41,3 +47,6 @@ class MainMenu(Menu):
 
     def on_button_click_slimmed(self):
         self.swap_menu(GameMenuOne(self.screen, self.swap_menu, ai=True))
+
+    def on_butoon_click_small(self):
+        self.swap_menu(GameMenuSmall(self.screen, self.swap_menu))

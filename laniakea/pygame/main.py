@@ -17,10 +17,6 @@ clock = pygame.time.Clock()
 screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 dh.init_images()
 board = Board(False)
-board[3][2] = 305
-board[4][2] = 1
-board[0][6] = 1
-board[0][0] = -1
 
 selected_field = None
 possible_moves = []
@@ -74,6 +70,8 @@ while running:
             mouse_x, mouse_y = pygame.mouse.get_pos()
             current_menu.handle_mouse_input(mouse_x, mouse_y)
             #handle_mouse_input(mouse_x, mouse_y)
+        elif event.type == pygame.KEYDOWN:
+            current_menu.handle_key_input(event.key)
 
     # Flip the display
     pygame.display.flip()

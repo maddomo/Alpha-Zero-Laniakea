@@ -61,7 +61,7 @@ class Board():
     
         board = [[None for _ in range(Board.rows + 1)] for _ in range(Board.cols)]
         for i in range(Board.rows):
-            position = random.randint(0, (Board.cols -2) / 2) * 2
+            position = random.randint(0, (Board.cols -2) // 2) * 2
             board[position][i] = 0
             board[position + 1][i] = 0
         for i in range(Board.rows):

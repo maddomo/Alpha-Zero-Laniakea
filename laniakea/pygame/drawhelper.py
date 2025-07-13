@@ -1,8 +1,9 @@
 import pygame
-
+from laniakea.pygame.fonthelper import get_font
 from laniakea.pygame.consts import SCREEN_WIDTH
 from ..LaniakeaHelper import decode_stack
 from .consts import *
+import textwrap
 
 turtle = None
 arrow_right, arrow_left = None, None
@@ -106,8 +107,9 @@ def draw_laniakea_piece(surface, stack_value, location, color):
     for i, piece in enumerate(stack):
         center_x = x + PIECE_SIZE // 2
         center_y = bottom_center_y - i * spacing
-        color = WHITE if piece == 1 else BLACK
-        pygame.draw.circle(surface, BLACK, (center_x, int(center_y)), radius)
+        color = PIECE_BLUE if piece == 1 else PIECE_ORANGE
+        surface_color = PIECE_BLUE_SURFACE if piece == 1 else PIECE_ORANGE_SURFACE
+        pygame.draw.circle(surface, surface_color, (center_x, int(center_y)), radius)
         pygame.draw.circle(surface, color, (center_x, int(center_y)), radius - border_width)
 
 
@@ -116,32 +118,27 @@ def draw_pieces_in_house(surface, start_x, start_y, width, height, piece_count, 
         return
     
     if piece_color == 1:
-        piece_color = WHITE
+        piece_color = PIECE_BLUE
+        surface_color = PIECE_BLUE_SURFACE
     elif piece_color == 3:
-        piece_color = BLACK
-
-    # Parameter aus draw_laniakea_piece für radius:
-    base_diameter = int(height * 0.75)  # Analog PIECE_SIZE * 0.75, hier height als Zellenhöhe
+        piece_color = PIECE_ORANGE
+        surface_color = PIECE_ORANGE_SURFACE
+    
+    base_diameter = int(height * 0.75) 
     base_radius = base_diameter // 2.5
     border_width = 3
 
-    max_pieces = 8  # Max. Anzahl Stücke, die ins Haus passen sollen
+    max_pieces = 8  # max pieces in house
     spacing = width / max_pieces
 
     radius = base_radius
-    # Optional: Wenn zu viele Stücke, Radius anpassen, damit sie reinpassen
-    if piece_count > max_pieces:
-        # z.B. skaliere Radius proportional runter
-        scale_factor = max_pieces / piece_count
-        radius = int(base_radius * scale_factor)
-        spacing = width / piece_count
 
     center_y = start_y + height // 2
 
     for i in range(piece_count):
         center_x = int(start_x + spacing * i + spacing / 2)
         # Schwarzer Rand
-        pygame.draw.circle(surface, BLACK, (center_x, center_y), radius)
+        pygame.draw.circle(surface, surface_color, (center_x, center_y), radius)
         # Innenfarbe (piece_color)
         pygame.draw.circle(surface, piece_color, (center_x, center_y), radius - border_width)
 
@@ -189,3 +186,93 @@ def draw_arrow(surface, pos, right=True):
     """
     
     surface.blit(arrow_right if right else arrow_left, pos)
+
+def draw_rules_overlay(surface, game_type):
+    padding = 30
+    overlay_rect = pygame.Rect(150, 50, SCREEN_WIDTH - 300, SCREEN_HEIGHT - 100)
+    pygame.draw.rect(surface, FOREGROUND_ACCENT_1, overlay_rect) 
+    pygame.draw.rect(surface, FOREGROUND_ACCENT_2, overlay_rect, 3)
+
+    font_regular = pygame.font.SysFont("chalkboardse", 20)
+    font_bold = pygame.font.SysFont("chalkboardse", 28, bold=True)
+
+    if game_type == 1:
+        rules = [
+            ("Spielziel:", True),
+            "- Bringe 5 eigene Steine ins gegnerische Heimatfeld",
+            "- ODER blockiere den Gegner komplett, sodass er keine Züge mehr machen kann",
+
+            ("", False),
+            ("1. Aktion: Ziehen", True),
+            "- Eine Figur 2 Felder bewegen ODER zwei Figuren je 1 Feld bewegen",
+            "- Rückwärts auf das Ausgangsfeld im gleichen Zug ist nicht erlaubt",
+            "- Nur freie Felder dürfen betreten werden (Schildkrötenfelder sind gesperrt)",
+            "- Figuren dürfen vom Spielfeld springen -> landen im Heimatbereich",
+            "- Figuren dürfen auf andere Figuren gezogen werden -> Stapel",
+            "- Ein Stapel darf maximal 3 Figuren hoch sein",
+            "- Stapelhöhe = mögliche Zugweite",
+
+            ("", False),
+            ("2. Aktion: Einschieben", True),
+            "- Fragment wird nach dem Ziehen an der Endposition eingeschoben",
+            "- Rausgeschobene Figuren -> zurück ins Heimatfeld",
+            "- Herausgeschobenes Fragment wird nächste Runde wiederverwendet",
+            "- Bei Zielerreichung darf man eine beliebige Reihe wählen",
+            "- Bei Rückkehr ins Heimatfeld darf kein Fragment eingeschoben werden",
+
+            ("", False),
+            ("", False),
+            ("Tastatureingaben", True),
+            "ESC drücken, um ausgewählten Stein rückgängig zu machen"
+        ]
+    else:
+        rules = [
+            ("Spielziel:", True),
+            "- Bringe 1 eigenen Stein ins gegnerische Heimatfeld",
+            "- ODER blockiere den Gegner komplett, sodass er keine Züge mehr machen kann",
+
+            ("", False),
+            ("1. Aktion: Ziehen", True),
+            "- Eine Figur 1 Felder bewegen",
+            "- Rückwärts auf das Ausgangsfeld im gleichen Zug ist nicht erlaubt",
+            "- Nur freie Felder dürfen betreten werden (Schildkrötenfelder sind gesperrt)",
+            "- Figuren dürfen vom Spielfeld springen -> landen im Heimatbereich",
+            "- Figuren dürfen auf andere Figuren gezogen werden -> Stapel",
+            "- Ein Stapel darf maximal 3 Figuren hoch sein",
+            "- Stapelhöhe = mögliche Zugweite",
+
+            ("", False),
+            ("2. Aktion: Einschieben", True),
+            "- Fragment wird nach dem Ziehen an der Endposition eingeschoben",
+            "- Rausgeschobene Figuren -> zurück ins Heimatfeld",
+            "- Herausgeschobenes Fragment wird nächste Runde wiederverwendet",
+            "- Bei Zielerreichung darf man eine beliebige Reihe wählen",
+            "- Bei Rückkehr ins Heimatfeld darf kein Fragment eingeschoben werden",
+
+            ("", False),
+            ("", False),
+            ("Tastatureingaben", True),
+            "ESC drücken, um ausgewählten Stein rückgängig zu machen"
+        ]
+
+    line_y = overlay_rect.y + padding
+    max_line_width = overlay_rect.width - 2 * padding
+
+    for entry in rules:
+        if isinstance(entry, tuple):
+            text, bold = entry
+        else:
+            text, bold = entry, False
+
+        font = font_bold if bold else font_regular
+        color = FOREGROUND_ACCENT_2 if bold else WHITE
+
+        wrapped_lines = textwrap.wrap(text, width=120)
+        for wrap_line in wrapped_lines:
+            text_surface = font.render(wrap_line, True, color)
+
+            text_width = text_surface.get_width()
+            x_pos = overlay_rect.x + (overlay_rect.width - text_width) // 2
+            surface.blit(text_surface, (x_pos, line_y))
+
+            line_y += font.get_height() + 4 
