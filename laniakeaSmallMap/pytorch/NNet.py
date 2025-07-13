@@ -23,7 +23,7 @@ args = dotdict(
     {
         "lr": 0.001,
         "dropout": 0.3,
-        "epochs": 30,
+        "epochs": 40,
         "batch_size": 2048,
         "cuda": torch.cuda.is_available(),
         "num_channels": 512,
