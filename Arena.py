@@ -101,7 +101,7 @@ class Arena():
                 twoWon += 1
             else:
                 draws += 1
-
+        print(f"Player 1 won {oneWon} games, Player 2 won {twoWon} games, and there were {draws} draws.\n", flush=True)
         self.player1, self.player2 = self.player2, self.player1
 
         for _ in tqdm(range(num), desc="Arena.playGames (2)"):
@@ -112,5 +112,5 @@ class Arena():
                 twoWon += 1
             else:
                 draws += 1
-
+        print(f"Player 1 won {oneWon} games, Player 2 won {twoWon} games, and there were {draws} draws.\n", flush=True)
         return oneWon, twoWon, draws

@@ -21,7 +21,7 @@ class LaniakeaGame(Game):
 
     def getInitBoard(self):
         # return initial board (numpy board)
-        return board_to_tensor(Board(True), 1)
+        return board_to_tensor(Board(), 1)
 
     def getBoardSize(self):
         # Tensor dimension
