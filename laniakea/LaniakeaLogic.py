@@ -80,7 +80,7 @@ class Board():
         insert_plate = self.get_random_plate()
         board[4][rows] = encode_plate(insert_plate)  # Insertable tile type
         self.board = np.array(board)
-            
+          
     def get_random_plate(self):        
         available_indices = [i for i, count in enumerate(self.plates) if count > 0]
         if not available_indices:
@@ -108,7 +108,6 @@ class Board():
         (1 for white, -1 for black)       
         """      
         moves = Board.step_move(self.board, color)
-        #print(f"Legal moves for player {color}: {moves} \n")
         return moves
        
     @staticmethod
@@ -119,9 +118,10 @@ class Board():
         if row == -2: return [i for i in range(0, 12)]
         return [row, row + 6]
 
+    #recursive function to get all possiblemoves on a given board for a given color
     @staticmethod
     def step_move(board, color, lastPosition=None, newPosition=None):
-        # moveList type: List[Tuple,Tuple,List[Tuple()]]
+        # moveList type: List[Tuple,Tuple,List[Tuple,Tupel, List[int]]]
         moveList = []
         player_home = 0 if color == 1 else 1
         # Check if a move from home is possible and if so, move a piece to the board
