@@ -1,3 +1,8 @@
+"""
+Main game loop that initializes the screen, loads the main menu, and handles user input. 
+It continuously draws the current menu and updates the display 
+at 60 FPS until the window is closed.
+"""
 import pygame
 
 from .ui.main_menu import MainMenu
@@ -9,49 +14,10 @@ from .consts import *
 from . import consts
 pygame.init()
 
-
-# 1 = WHITE, -1 = BLACK
-current_player = 1
-
 clock = pygame.time.Clock()
 
 screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 dh.init_images()
-board = Board(False)
-
-selected_field = None
-possible_moves = []
-
-def stack_top_matches_player(stack, current_player):
-    decoded = decode_stack(stack)
-    return decoded and decoded[-1] == current_player
-
-# return a list of possible moves for a (selected) piece
-def get_legal_moves_for_piece(piece):
-    """
-    Gibt alle Zielpositionen (x, y) zurück, zu denen ein Spielstein
-    vom Feld `selected_field` (x, y) aus ziehen kann.
-    """
-    all_moves = board.get_legal_moves(current_player)
-    print("all moves:", all_moves)
-    x, y = piece
-    result = []
-
-    for move in all_moves:
-        from_pos, to_pos, _ = move
-        if from_pos == (x, y):
-            result.append(to_pos)
-
-    return result
-    
-
-
-
-# Draw a solid blue circle in the center
-#pygame.draw.circle(screen, (0, 0, 255), (250, 250), 75)
-
-#draw_board()
-
 
 consts.current_menu = MainMenu(screen)
 

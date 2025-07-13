@@ -1,3 +1,7 @@
+"""
+Implements the main menu UI for the game, including buttons for different game modes and settings.
+Handles menu transitions, AI toggling, and randomization state.
+"""
 import pygame
 
 from laniakea.pygame.ui.difficulty_selector_menu import DifficultySelectorMenu

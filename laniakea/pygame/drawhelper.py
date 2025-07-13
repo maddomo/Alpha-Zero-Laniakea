@@ -1,3 +1,9 @@
+"""
+Handles the rendering of all visual elements in the Laniakea game using Pygame.
+Includes functions for loading and scaling assets, drawing board pieces and their
+states, rendering UI components like arrows, logos, and rule overlays, and visualizing
+game mechanics such as stacked pieces, extra tiles, and the player's home area.
+"""
 import pygame
 from laniakea.pygame.fonthelper import get_font
 from laniakea.pygame.consts import SCREEN_WIDTH

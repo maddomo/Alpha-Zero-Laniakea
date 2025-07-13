@@ -1,3 +1,9 @@
+"""
+GUI for Laniakea with a 8x6 board and three actions per move.
+1. action: move a piece
+2. action: move the same or another piece
+3. action: insert a plate into the board
+"""
 from laniakea.pygame.fonthelper import get_font
 from ...LaniakeaHelper import decode_stack, encode_stack, decode_plate, encode_action
 from ..consts import *
@@ -29,7 +35,7 @@ class GameMenu(Menu):
         self.black_won_text = self.font.render("Orange has won!", True, "#FFFFFF")
         self.who_won = -1  # -1 = no one, 0 = white, 1 = black
         self.won_tick = -1 # -1 = no one has won yet, otherwise the tick when the game was won
-
+        # rules-button
         self.showing_rules = False  
         self.rules_button = Button(screen, None, "Rules", 32, self.on_rules_click)
         bounds = self.rules_button.get_bounds()
@@ -54,14 +60,16 @@ class GameMenu(Menu):
         if self.showing_rules:
             dh.draw_rules_overlay(self.screen, 1)
     
-    #def handle_mouse_input(self, mouse_x, mouse_y):
-    #    return super().handle_mouse_input(mouse_x, mouse_y)
-    
     def on_rules_click(self):
         self.showing_rules = not self.showing_rules
 
     def handle_mouse_input(self, mouse_x, mouse_y):
-
+        """
+        Handles mouse input by determining which board element or field was clicked based on the mouse coordinates.
+        - Checks if any UI element was clicked and triggers its click event.
+        - Calculates if the click was inside the black house, the main 8x6 board, or the white house, and identifies the corresponding field.
+        - Based on the current move state, filters possible moves and updates the selected field or move.
+        """
         for element in self.elements:
             pos = element.get_pos()
             bounds = element.get_bounds()
@@ -78,11 +86,9 @@ class GameMenu(Menu):
         field_height = dh.PIECE_HEIGHT * 6
 
         field = None
-
         move_state = self.get_move_state()
 
-
-        # Klick in black house
+        # click in black house
         if board_x <= mouse_x < board_x + board_pixel_width and board_y <= mouse_y < board_y + house_height:
             col = int((mouse_x - board_x) // dh.PIECE_WIDTH)
             if self.current_player == -1:
@@ -90,7 +96,7 @@ class GameMenu(Menu):
             if self.current_player == 1:
                 field = (-2, -2)
 
-        # Klick in 8x6 board
+        # click in 8x6 board
         elif board_x <= mouse_x < board_x + board_pixel_width and board_y + house_height <= mouse_y < board_y + house_height + field_height:
             col = int((mouse_x - board_x) // dh.PIECE_WIDTH)
             row = int((mouse_y - (board_y + house_height)) // dh.PIECE_HEIGHT)
@@ -98,7 +104,7 @@ class GameMenu(Menu):
             if 0 <= col < COLS and 0 <= row < ROWS:
                 field = (col, row)
 
-        # Klick in white house
+        # click in white house
         elif board_x <= mouse_x < board_x + board_pixel_width and board_y + house_height + field_height <= mouse_y < board_y + house_height + field_height + house_height:
             col = int((mouse_x - board_x) // dh.PIECE_WIDTH)
             if self.current_player == 1:
@@ -116,7 +122,7 @@ class GameMenu(Menu):
             filtered_possible_moves = self.filter_possible_second_moves()
         else: filtered_possible_moves = []
 
-        # Wenn außerhalb des Feldes geklickt wurde
+        # click outside of the board
         if field is None:
             if move_state == 2:
                 insert_moves = self.filter_possible_insert_moves()
@@ -134,7 +140,7 @@ class GameMenu(Menu):
 
         stack = self.visual_board[field[0]][field[1]]
 
-        # Klick auf eigenes Piece oder zweiter Klick auf vorheriges Zielfeld
+        # click on own piece or second click on possible move field
         if self.stack_top_matches_player(stack, self.current_player) or (self.first_move is not None and field == self.first_move[1]):
             if field in filtered_possible_moves:
                 if move_state == 0:
@@ -149,8 +155,10 @@ class GameMenu(Menu):
             elif move_state == 1:
                 self.set_move(self.selected_field, field, 2)
 
-        
     def stack_top_matches_player(self, stack, current_player):
+        """
+        Returns if piece on top of a stack is one of the current player's
+        """
         decoded = decode_stack(stack)
         return decoded and decoded[-1] == current_player
     
@@ -160,10 +168,10 @@ class GameMenu(Menu):
         
     def get_move_state(self):
         """
-        Gibt den aktuellen Status des Zuges für den aktuellen Spieler zurück.
-        0: Spieler hat noch keinen ersten Zug ausgewählt
-        1: Spieler hat ersten Zug ausgewählt, aber noch keinen zweiten
-        2: Spieler hat beide Züge ausgewählt, aber noch keine Reihe zum Teil einschieben
+        Returns the current move state for the active player.
+        0: Player has not selected the first move yet
+        1: Player has selected the first move but not the second
+        2: Player has selected both moves but not yet chosen a row to insert
         """
         if self.first_move == None:
             return 0
@@ -174,7 +182,9 @@ class GameMenu(Menu):
     
     def set_move(self, from_field, to_field, move_num):
         """
-        move_num: 1 für den ersten Move, 2 für den zweiten
+        Updates the visual board by applying a move from one field to another.
+        Handles moves from home, normal moves, scoring moves, and moves back home.
+        Tracks whether the move is the first or second in a sequence and completes the move if needed.
         """
         color = 1 if self.current_player == 1 else -1
         player_home = 0 if color == 1 else 1
@@ -197,10 +207,7 @@ class GameMenu(Menu):
 
             if to_field == (-2,-2):
                 # Scoring Move
-                #print("SCORED Player", color, "has scored\n")
                 self.visual_board[2 + player_home][6] += 1
-                #print(f"Moved piece from ({x1}, {y1}) to scoring area")
-                #print(self.board[2 + player_home][6], "pieces in scoring area")
                 
             elif to_field == (-1,-1):
                 # Back Home
@@ -233,6 +240,10 @@ class GameMenu(Menu):
         self.selected_field = None
 
     def complete_move(self):
+        """
+        Finalizes the current player's move by executing it on the board, updating the visual board state, 
+        and resetting move-related selections. Checks for a win condition and switches to the next player.
+        """
         self.board.execute_move(((self.first_move, self.second_move), self.selected_row), self.current_player)
         self.visual_board = copy.deepcopy(self.board)
         self.selected_field = None
@@ -245,26 +256,34 @@ class GameMenu(Menu):
         self.current_player *= -1
 
     def filter_possible_first_moves(self):
+        """
+        Returns all possible fields for the position of the current selected field
+        """
         filtered_list = [n[1] for n in self.possible_moves if n[0] == self.selected_field]
         return filtered_list
     
     def filter_possible_second_moves(self):
+        """
+        Returns all possible second moves based on the first move and for the position of the current selected field
+        """
         index = -1
         for i, move in enumerate(self.possible_moves):
             if move[0] == self.first_move[0] and move[1] == self.first_move[1]:
                 index = i
 
         move = self.possible_moves[index]
-        # move hat Struktur: (start_coord, end_coord, move_list)
         if len(move) != 3:
-            return []  # Absicherung, falls Struktur nicht stimmt
+            return []
         _, _, move_list = move
-        # move_list ist eine Liste von Tupeln mit Struktur: (start_field, end_field, weitere Daten)
-        # Wir wollen alle end_field, bei denen start_field == selected_field ist
+        # move_list is a list with tuples and the following structure: (start_field, end_field, weitere Daten)
+        # Return all end fields where the start field equals the selected field
         to_positions = [to_pos for from_pos, to_pos, _ in move_list if from_pos == self.selected_field]
         return to_positions
     
     def filter_possible_insert_moves(self):
+        """
+        Returns all possible insert moves based on the selected first and second moves.
+        """
         if self.first_move is None or self.second_move is None:
             return []
         
@@ -274,9 +293,12 @@ class GameMenu(Menu):
 
 
     def draw_board_helper(self):
-        
+        """
+        Controls how the game board is drawn. It decides which fields and areas to highlight 
+        based on the current player and move state. Then it calls helper functions to actually draw the board, 
+        the pieces, and the possible moves on the screen.
+        """
         move_state = self.get_move_state()
-
         if move_state == 0:
             filtered_possible_moves = self.filter_possible_first_moves()
         elif move_state == 1:
@@ -288,8 +310,6 @@ class GameMenu(Menu):
         
         x = SCREEN_WIDTH / 2 - BOARD_WIDTH / 2
         y = 4
-
-        
 
         #background
         pygame.draw.rect(self.screen, FOREGROUND_ACCENT_2, (x, y, BOARD_WIDTH, BOARD_HEIGHT))
@@ -308,21 +328,12 @@ class GameMenu(Menu):
 
         y += PIECE_HEIGHT * 2
 
-        
-
         #laniakea rows
-        for offset_y in range(6):  # 0 → 5 (unten → oben)
+        for offset_y in range(6): 
             for offset_x in range(COLS):
-                board_y = 5 - offset_y  # Invertiere y, sodass 0 = unten
+                board_y = 5 - offset_y  # invert y so that 0 = bottom
                 color = self.get_field_color((offset_x, board_y), filtered_possible_moves)
                 dh.draw_laniakea_piece(self.screen, self.visual_board[offset_x][board_y], (x + offset_x * PIECE_WIDTH, y + offset_y * PIECE_HEIGHT), color)
-                # if (self.selected_field == (offset_x, board_y)):
-                #     dh.draw_laniakea_piece(self.screen, self.visual_board[offset_x][board_y], (x + offset_x * PIECE_WIDTH, y + offset_y * PIECE_HEIGHT), 1)
-                # elif ((offset_x, board_y) in filtered_possible_moves):
-                #     dh.draw_laniakea_piece(self.screen, self.visual_board[offset_x][board_y], (x + offset_x * PIECE_WIDTH, y + offset_y * PIECE_HEIGHT), 2)
-                # else:
-                #     dh.draw_laniakea_piece(self.screen, self.visual_board[offset_x][board_y], (x + offset_x * PIECE_WIDTH, y + offset_y * PIECE_HEIGHT), 0)
-
         
         y += PIECE_HEIGHT * 6
 
@@ -338,10 +349,8 @@ class GameMenu(Menu):
         # Black pieces in scoring space
         dh.draw_pieces_in_house(self.screen, x, y + PIECE_HEIGHT, BOARD_WIDTH, PIECE_HEIGHT, self.visual_board[3][ROWS], 3)
 
-
         insert_plate = decode_plate(self.visual_board[4][ROWS])
         dh.draw_extra_plate(self.screen, (10, 10), insert_plate)
-
 
         if move_state == 2:
             list = self.filter_possible_insert_moves()
@@ -351,9 +360,6 @@ class GameMenu(Menu):
                 
                 dh.draw_arrow(self.screen, (x, y), not num // 6)
             pass
-
-
-        
 
     def get_field_color(self, pos, filtered_possible_moves): 
         if self.selected_field == pos:
