@@ -1,4 +1,6 @@
 from laniakea.pygame.fonthelper import get_font
+from laniakeaSmallMap.pytorch.NNet import NNetWrapper
+from laniakeaSmallMap.LaniakeaGame import LaniakeaGame
 from laniakeaSmallMap.LaniakeaHelper import decode_stack, encode_stack, decode_plate, encode_action
 from ..consts import *
 from .menu import Menu
@@ -13,9 +15,9 @@ COLS = 6
 
 class GameMenuSmall(Menu):
 
-    def __init__(self, screen, swap_menu):
-        super().__init__(screen, swap_menu)
-        self.board = Board()
+    def __init__(self, screen, ai, randomize, ai_model=None):
+        super().__init__(screen)
+        self.board = Board(randomize)
         self.visual_board = copy.deepcopy(self.board)
         self.selected_field = None
         self.current_player = 1
@@ -30,11 +32,22 @@ class GameMenuSmall(Menu):
         self.won_tick = -1 # -1 = no one has won yet, otherwise the tick when the game was won
         self.upper_board_edge = (SCREEN_HEIGHT - BOARD_HEIGHT_SMALL - (PIECE_WIDTH * 4)) / 2 + 30
 
+        
+
+
         self.showing_rules = False  
         self.rules_button = Button(screen, None, "Rules", 32, self.on_rules_click)
         bounds = self.rules_button.get_bounds()
         self.rules_button.set_pos((SCREEN_WIDTH - bounds[0] - 10, 10))
         self.elements.append(self.rules_button)
+
+        if ai != 0:
+            from laniakea.pygame.ai.ai_setup import AIPlayer
+            game = LaniakeaGame()
+            self.ai_player = AIPlayer(game, ai, NNetWrapper(game), "smallmap")
+            if ai == 1:
+                self.play_ai_move()
+
 
     def draw_screen(self):
 
@@ -47,6 +60,7 @@ class GameMenuSmall(Menu):
         if self.won_tick != -1 and self.tick - self.won_tick > 60 * 5:
             from laniakea.pygame.ui.main_menu import MainMenu
             self.swap_menu(MainMenu(self.screen, self.swap_menu))
+            self.won_tick = -1
 
         self.tick += 1
         super().draw_screen()
@@ -219,6 +233,17 @@ class GameMenuSmall(Menu):
         self.selected_field = None
         self.first_move = None
         self.selected_row = None
+        if self.board.is_win(self.current_player):
+            self.who_won = 0 if self.current_player == 1 else 1
+            self.won_tick = self.tick
+        self.current_player *= -1
+        if self.ai_player is not None:
+            self.play_ai_move()
+
+    def play_ai_move(self):
+        action = self.ai_player.get_action(self.board)
+        self.board.execute_move(action, self.current_player)
+        self.visual_board = copy.deepcopy(self.board)
         if self.board.is_win(self.current_player):
             self.who_won = 0 if self.current_player == 1 else 1
             self.won_tick = self.tick

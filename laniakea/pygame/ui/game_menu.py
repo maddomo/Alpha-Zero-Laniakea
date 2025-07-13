@@ -13,9 +13,9 @@ COLS = 8
 
 class GameMenu(Menu):
 
-    def __init__(self, screen, swap_menu):
-        super().__init__(screen, swap_menu)
-        self.board = Board()
+    def __init__(self, screen, randomize=False):
+        super().__init__(screen)
+        self.board = Board(randomize)
         self.visual_board = copy.deepcopy(self.board)
         self.selected_field = None
         self.current_player = 1

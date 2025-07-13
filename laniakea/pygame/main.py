@@ -6,6 +6,7 @@ import random
 from ..LaniakeaLogic import Board
 from ..LaniakeaHelper import decode_stack, encode_stack
 from .consts import *
+from . import consts
 pygame.init()
 
 
@@ -51,27 +52,23 @@ def get_legal_moves_for_piece(piece):
 
 #draw_board()
 
-def setter(menu):
-    global current_menu
-    current_menu = menu
 
-
-current_menu = MainMenu(screen, setter)
+consts.current_menu = MainMenu(screen)
 
 running = True
 while running:
 
-    current_menu.draw_screen()
+    consts.current_menu.draw_screen()
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = pygame.mouse.get_pos()
-            current_menu.handle_mouse_input(mouse_x, mouse_y)
+            consts.current_menu.handle_mouse_input(mouse_x, mouse_y)
             #handle_mouse_input(mouse_x, mouse_y)
         elif event.type == pygame.KEYDOWN:
-            current_menu.handle_key_input(event.key)
+            consts.current_menu.handle_key_input(event.key)
 
     # Flip the display
     pygame.display.flip()
