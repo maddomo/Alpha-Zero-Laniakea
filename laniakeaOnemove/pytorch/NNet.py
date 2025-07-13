@@ -6,7 +6,10 @@ from typing import List, Tuple
 import numpy as np
 from tqdm import tqdm
 
+from laniakeaOnemove.LaniakeaHelper import decode_action, mirror_action
+
 sys.path.append("../../")
+from laniakeaOnemove.LaniakeaBoardConverter import board_to_tensor
 from utils import AverageMeter, dotdict  # noqa: E402
 from NeuralNet import NeuralNet        # noqa: E402
 
@@ -138,3 +141,12 @@ class NNetWrapper(NeuralNet):
         map_loc = None if args.cuda else "cpu"
         chkpt = torch.load(path, map_location=map_loc)
         self.nnet.load_state_dict(chkpt["state_dict"])
+
+    def board_to_tensor(self, board, player):
+        return board_to_tensor(board, player)
+    
+    def decode_action(self, action):
+        return decode_action(action)
+    
+    def mirror_action(self, action):
+        return mirror_action(action)

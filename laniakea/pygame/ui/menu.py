@@ -3,10 +3,9 @@ import pygame
 
 class Menu:
 
-    def __init__(self, screen, swap_menu):
+    def __init__(self, screen):
         self.screen = screen    # set instance attribute
         self.elements = []
-        self.swap_menu = swap_menu
         
 
     def draw_screen(self):
@@ -23,3 +22,7 @@ class Menu:
 
     def handle_key_input(self, key):
         pass
+
+    def swap_menu(self, menu):
+        from .. import consts
+        consts.current_menu = menu

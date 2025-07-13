@@ -15,6 +15,7 @@ class Button(Element):
         self.size = size
         self.font = get_font(size)
         self.text_surface = self.font.render(text, True, "#FFFFFF")
+        self.disabled = False
         self.callback = callback
 
     def draw(self):
@@ -25,7 +26,7 @@ class Button(Element):
 
         box_bounds = (text_width + padding * 2, text_height + padding * 2)
 
-        pygame.draw.rect(self.screen, FOREGROUND_ACCENT_1, self.pos + box_bounds, border_radius=int(min(box_bounds[0] / 2, box_bounds[1] / 2)))
+        pygame.draw.rect(self.screen, GRAY if self.disabled else FOREGROUND_ACCENT_1, self.pos + box_bounds, border_radius=int(min(box_bounds[0] / 2, box_bounds[1] / 2)))
 
         self.screen.blit(self.text_surface, (self.pos[0] + padding, self.pos[1] + padding))
 
@@ -41,5 +42,13 @@ class Button(Element):
         self.pos = pos
 
     def click(self):
-        if self.callback is not None:
+        if self.callback is not None and not self.disabled:
             self.callback()
+
+    def set_text(self, text):
+        self.text = text
+        self.text_surface = self.font.render(text, True, "#FFFFFF")
+
+
+    def set_disabled(self, disabled: bool):
+        self.disabled = disabled
