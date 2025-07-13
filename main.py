@@ -3,35 +3,36 @@ import logging
 import coloredlogs
 
 from Coach import Coach
-from tictactoe.TicTacToeGame import TicTacToeGame as Game
-from tictactoe.keras.NNet import NNetWrapper as nn
+from laniakeaSmallMap.LaniakeaGame import LaniakeaGame as Game
+from laniakeaSmallMap.pytorch.NNet import NNetWrapper as nn
 from utils import *
+
 
 log = logging.getLogger(__name__)
 
 coloredlogs.install(level='INFO')  # Change this to DEBUG to see more info.
 
 args = dotdict({
-    'numIters': 5, 
-    'numEps': 30,              # Number of complete self-play games to simulate during a new iteration.
-    'tempThreshold': 15,        #
-    'updateThreshold': 0.6,     # During arena playoff, new neural net will be accepted if threshold or more of games are won.
-    'maxlenOfQueue': 200000,    # Number of game examples to train the neural networks.
-    'numMCTSSims': 10,          # Number of games moves for MCTS to simulate.
-    'arenaCompare': 10,         # Number of games to play during arena play to determine if new net will be accepted.
+    'numIters': 100, 
+    'numEps': 150,              # Number of complete self-play games to simulate during a new iteration.
+    'tempThreshold': 5,        #
+    'updateThreshold': 0.53,     # During arena playoff, new neural net will be accepted if threshold or more of games are won.
+    'maxlenOfQueue': 10000,    # Number of game examples to train the neural networks.
+    'numMCTSSims': 20,          # Number of games moves for MCTS to simulate.
+    'arenaCompare': 16,         # Number of games to play during arena play to determine if new net will be accepted.
     'cpuct': 1,
 
     'checkpoint': './temp/',
-    'load_model': False,
-    'load_folder_file': ('/dev/models/8x100x50','best.pth.tar'),
-    'numItersForTrainExamplesHistory': 20,
+    'load_model': True,
+    'load_folder_file': ('temp','checkpoint_5.pth.tar'),
+    'numItersForTrainExamplesHistory': 5,
 
 })
 
 
 def main():
     log.info('Loading %s...', Game.__name__)
-    g = Game(6)
+    g = Game()
 
     log.info('Loading %s...', nn.__name__)
     nnet = nn(g)

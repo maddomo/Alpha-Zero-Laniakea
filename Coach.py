@@ -49,22 +49,27 @@ class Coach():
         board = self.game.getInitBoard()
         self.curPlayer = 1
         episodeStep = 0
-
+        MAX_EXAMPLES_PER_GAME = 150
+        print(f"Initial board: {self.game.display(board)}\n", flush=True)
         while True:
             episodeStep += 1
+            
             canonicalBoard = self.game.getCanonicalForm(board, self.curPlayer)
             temp = int(episodeStep < self.args.tempThreshold)
 
+
             pi = self.mcts.getActionProb(canonicalBoard, temp=temp)
+            
             sym = self.game.getSymmetries(canonicalBoard, pi)
             for b, p in sym:
                 trainExamples.append([b, self.curPlayer, p, None])
 
             action = np.random.choice(len(pi), p=pi)
             board, self.curPlayer = self.game.getNextState(board, self.curPlayer, action)
-
+            #print(f"Episode step {episodeStep} for player {self.curPlayer} with action {action}, board:\n{self.game.display(board)}")
             r = self.game.getGameEnded(board, self.curPlayer)
-
+            if len(trainExamples) > MAX_EXAMPLES_PER_GAME:
+                trainExamples = trainExamples[-MAX_EXAMPLES_PER_GAME:]
             if r != 0:
                 return [(x[0], x[2], r * ((-1) ** (x[1] != self.curPlayer))) for x in trainExamples]
 
@@ -111,11 +116,19 @@ class Coach():
             pmcts = MCTS(self.game, self.pnet, self.args)
 
             self.nnet.train(trainExamples)
+            #Nur fürs aller erste training, damit wir mal eine haben
+            #if(i <= 1):
+             #   log.info(f"Auto-accepting model in early iteration {i}")
+              #  self.nnet.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
+               # self.nnet.save_checkpoint(folder=self.args.checkpoint, filename='best.pth.tar')
+                #continue
+
+            pmcts = MCTS(self.game, self.pnet, self.args)
             nmcts = MCTS(self.game, self.nnet, self.args)
 
             log.info('PITTING AGAINST PREVIOUS VERSION')
             arena = Arena(lambda x: np.argmax(pmcts.getActionProb(x, temp=0)),
-                          lambda x: np.argmax(nmcts.getActionProb(x, temp=0)), self.game)
+                          lambda x: np.argmax(nmcts.getActionProb(x, temp=0)), self.game, self.game.display)
             pwins, nwins, draws = arena.playGames(self.args.arenaCompare)
 
             log.info('NEW/PREV WINS : %d / %d ; DRAWS : %d' % (nwins, pwins, draws))
