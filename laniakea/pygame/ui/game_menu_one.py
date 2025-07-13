@@ -1,4 +1,5 @@
 from laniakea.pygame.fonthelper import get_font
+from laniakeaOnemove.LaniakeaGame import LaniakeaGame
 from ...LaniakeaHelper import decode_stack, encode_stack, decode_plate, encode_action
 from ..consts import *
 from .menu import Menu
@@ -12,12 +13,12 @@ COLS = 8
 
 class GameMenuOne(Menu):
 
-    def __init__(self, screen, swap_menu):
+    def __init__(self, screen, swap_menu, ai=False):
         super().__init__(screen, swap_menu)
-        self.board = Board()
+        self.board = Board(randomize=False)
         self.visual_board = copy.deepcopy(self.board)
         self.selected_field = None
-        self.current_player = 1
+        self.current_player = 1 # 1 = white, -1 = black
         self.first_move = None
         self.selected_row = None
         self.possible_moves = self.board.get_legal_moves(self.current_player)
@@ -27,6 +28,9 @@ class GameMenuOne(Menu):
         self.black_won_text = self.font.render("Black has won!", True, "#FFFFFF")
         self.who_won = -1  # -1 = no one, 0 = white, 1 = black
         self.won_tick = -1 # -1 = no one has won yet, otherwise the tick when the game was won
+        if ai:
+            from laniakea.pygame.ai.ai_setup import AIPlayer
+            self.ai_player = AIPlayer(LaniakeaGame(), -1)
 
     def draw_screen(self):
 
@@ -206,6 +210,12 @@ class GameMenuOne(Menu):
             self.who_won = 0 if self.current_player == 1 else 1
             self.won_tick = self.tick
         self.current_player *= -1
+
+        if self.ai_player is not None:
+            action = self.ai_player.get_action(self.board)
+            self.board.execute_move(action, self.current_player)
+            self.visual_board = copy.deepcopy(self.board)
+            self.current_player *= -1
 
     def filter_possible_first_moves(self):
         filtered_list = [n[1] for n in self.possible_moves if n[0] == self.selected_field]
