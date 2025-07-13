@@ -122,8 +122,10 @@ class Board():
         if row == -2: return [i for i in range(0, 12)]
         return [row, row + 6]
 
+    #Function to get all possible moves on a given board for a given color
     @staticmethod
     def step_move(board, color, lastPosition = None, newPosition = None):
+        #moveList = []  # type: List[Tuple,Tuple,List[int]]
         moveList = []
         player_home = 0 if color == 1 else 1
          

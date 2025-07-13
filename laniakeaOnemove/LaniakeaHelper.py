@@ -1,3 +1,4 @@
+#helperfunction to encode the information of a stack of playing pieces into in integer
 def encode_stack(list):
 
     result = 0
@@ -8,6 +9,7 @@ def encode_stack(list):
 
     return result
 
+#helperfunction to get the height of a stack of playingpieces
 def get_stack_height(n):
     count = 0
     while n > 0:
@@ -17,10 +19,12 @@ def get_stack_height(n):
         n >>= 4  # shift right by 4 bits (1 nibble)
     return count
 
+#helperfunction to get the top color of a stack of playing pieces
 def get_top_color(n):
     list = decode_stack(n)
     return list[len(list) - 1]
 
+#helperfunction to decode the information of a stack of playing pieces from an integer
 def decode_stack(n):
     result = []
     if n is None or n == 0:
@@ -39,6 +43,7 @@ INSERT_ROWS = 13
 #ROTATE_OPTIONS = 2
 SCORING_POS = (-2,-2)
 
+#Generate all possible moves
 ALL_MOVES = []
 for y, x, (dx, dy), h in product(range(6), range(8),
                                  [(1,0), (0,1), (-1,0), (0,-1)],
@@ -65,6 +70,7 @@ for x in range(8):
     for i in range(3):
         ALL_MOVES.append(((x, 5 - i), SCORING_POS))
 
+#Remove duplicates
 seen = set()
 unique_moves = []
 for move in ALL_MOVES:
@@ -77,26 +83,21 @@ MAX_MOVES = len(ALL_MOVES)
 ACTION_SIZE = MAX_MOVES * INSERT_ROWS
 MOVE_TO_ID = {m: i for i, m in enumerate(ALL_MOVES)}
 ID_TO_MOVE = {i: m for m, i in MOVE_TO_ID.items()}
-#print(f"Total Moves: {len(ALL_MOVES)}")
-#print(MOVE_TO_ID,"\n")
-#print(ID_TO_MOVE,"\n")
+
 print(f"Total Actions: {ACTION_SIZE} (Moves: {MAX_MOVES}, Insert Rows: {INSERT_ROWS})")
 
-# ------------------------------------------------
-# Encode to single index
-# ------------------------------------------------
+# Encode Move to single index
 def encode_action(move, insert_row):
     id1 = MOVE_TO_ID[move]
     return id1 * INSERT_ROWS + insert_row
 
-# ------------------------------------------------
-# Decode from index
-# ------------------------------------------------
+#Decode single index to move
 def decode_action(index):
     move_id, insert_row = divmod(index, INSERT_ROWS)
     move = ID_TO_MOVE[move_id]
     return (move, insert_row)
 
+#mirror an action for player -1
 def mirror_action(action):
     move, insert_row = action
     move_copy = list(move)
@@ -109,7 +110,7 @@ def mirror_action(action):
 
     return (tuple(move_copy), 11 - insert_row if insert_row < 12 else 12)
 
-
+#Encode plate to single index
 def encode_plate(plate):
     if plate == [-1, -1]:
         return 0
@@ -122,6 +123,7 @@ def encode_plate(plate):
     else:
         raise ValueError("Invalid plate encoding: {}".format(plate))
 
+#Decode single index to plate
 def decode_plate(index):
     if index == 0:
         return [-1, -1]
@@ -134,4 +136,3 @@ def decode_plate(index):
     else:
         raise ValueError("Invalid plate decoding: {}".format(index))
     
-print(encode_action(((0, 0), (1, 0)), 0))

@@ -32,11 +32,11 @@ args = dotdict(
 
 
 class NNetWrapper(NeuralNet):
-    """Thin convenience wrapper around :class:`Game3DNNet`.
+    """Thin convenience wrapper around :class:`LaniakeaNNet`.
 
     * Handles batching, loss functions, checkpointing.
     * Converts numpy boards ⇄ torch tensors.
-    * Expects *volumetric* game boards with shape ``(x, y, z)``.
+    * Expects *volumetric* game boards with shape ``(channels, x, y)``.
     """
 
     def __init__(self, game):
