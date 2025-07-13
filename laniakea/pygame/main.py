@@ -70,6 +70,8 @@ while running:
             mouse_x, mouse_y = pygame.mouse.get_pos()
             current_menu.handle_mouse_input(mouse_x, mouse_y)
             #handle_mouse_input(mouse_x, mouse_y)
+        elif event.type == pygame.KEYDOWN:
+            current_menu.handle_key_input(event.key)
 
     # Flip the display
     pygame.display.flip()

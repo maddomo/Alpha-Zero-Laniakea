@@ -6,6 +6,7 @@ from .. import drawhelper as dh
 from laniakeaOnemove.LaniakeaLogic import Board
 import pygame
 import copy
+from .elements.button import Button
 
 ROWS = 6
 COLS = 8
@@ -28,6 +29,12 @@ class GameMenuOne(Menu):
         self.who_won = -1  # -1 = no one, 0 = white, 1 = black
         self.won_tick = -1 # -1 = no one has won yet, otherwise the tick when the game was won
 
+        self.showing_rules = False  
+        self.rules_button = Button(screen, None, "Rules", 32, self.on_rules_click)
+        bounds = self.rules_button.get_bounds()
+        self.rules_button.set_pos((SCREEN_WIDTH - bounds[0] - 10, 10))
+        self.elements.append(self.rules_button)
+
     def draw_screen(self):
 
         self.screen.blit(dh.bg, (0, 0))
@@ -42,12 +49,25 @@ class GameMenuOne(Menu):
 
         self.tick += 1
         super().draw_screen()
+
+        if self.showing_rules:
+            dh.draw_rules_overlay(self.screen, 1)
     
     #def handle_mouse_input(self, mouse_x, mouse_y):
     #    return super().handle_mouse_input(mouse_x, mouse_y)
         
+    def on_rules_click(self):
+        self.showing_rules = not self.showing_rules
 
     def handle_mouse_input(self, mouse_x, mouse_y):
+
+        for element in self.elements:
+            pos = element.get_pos()
+            bounds = element.get_bounds()
+
+            if pos[0] <= mouse_x <= pos[0] + bounds[0] and pos[1] <= mouse_y <= pos[1] + bounds[1]:
+                element.click()
+                return
 
         board_x = SCREEN_WIDTH / 2 - (dh.PIECE_WIDTH * 8) / 2
         board_y = 4  # upper edge
@@ -61,7 +81,7 @@ class GameMenuOne(Menu):
         move_state = self.get_move_state()
 
 
-        # Klick in black house
+        # click in black house
         if board_x <= mouse_x < board_x + board_pixel_width and board_y <= mouse_y < board_y + house_height:
             col = int((mouse_x - board_x) // dh.PIECE_WIDTH)
             if self.current_player == -1:
@@ -69,7 +89,7 @@ class GameMenuOne(Menu):
             if self.current_player == 1:
                 field = (-2, -2)
 
-        # Klick in 8x6 board
+        # click in 8x6 board
         elif board_x <= mouse_x < board_x + board_pixel_width and board_y + house_height <= mouse_y < board_y + house_height + field_height:
             col = int((mouse_x - board_x) // dh.PIECE_WIDTH)
             row = int((mouse_y - (board_y + house_height)) // dh.PIECE_HEIGHT)
@@ -77,7 +97,7 @@ class GameMenuOne(Menu):
             if 0 <= col < COLS and 0 <= row < ROWS:
                 field = (col, row)
 
-        # Klick in white house
+        # click in white house
         elif board_x <= mouse_x < board_x + board_pixel_width and board_y + house_height + field_height <= mouse_y < board_y + house_height + field_height + house_height:
             col = int((mouse_x - board_x) // dh.PIECE_WIDTH)
             if self.current_player == 1:
@@ -93,7 +113,7 @@ class GameMenuOne(Menu):
             filtered_possible_moves = self.filter_possible_first_moves()
         else: filtered_possible_moves = []
 
-        # Wenn außerhalb des Feldes geklickt wurde
+        # click outside of board
         if field is None:
             if move_state == 1:
                 insert_moves = self.filter_possible_insert_moves()
@@ -299,11 +319,20 @@ class GameMenuOne(Menu):
         
 
     def get_field_color(self, pos, filtered_possible_moves): 
-        if (self.first_move is not None and pos in self.first_move):
-            return FOREGROUND_ACCENT_1
         if self.selected_field == pos:
             return SELECTED_COLOR
         elif pos in filtered_possible_moves:
             return MOVE_COLOR
+        elif (self.first_move is not None and pos in self.first_move):
+            return FOREGROUND_ACCENT_1
         else:
             return FOREGROUND
+        
+    def cancel_selection(self):
+        if(self.selected_field is not None):
+            self.selected_field = None
+
+    def handle_key_input(self, key):
+        if key == pygame.K_ESCAPE:
+            if self.get_move_state() == 0 or self.get_move_state() == 1:
+                self.cancel_selection()

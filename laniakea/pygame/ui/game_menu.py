@@ -6,6 +6,7 @@ from .. import drawhelper as dh
 from ...LaniakeaLogic import Board
 import pygame
 import copy
+from .elements.button import Button
 
 ROWS = 6
 COLS = 8
@@ -29,6 +30,12 @@ class GameMenu(Menu):
         self.who_won = -1  # -1 = no one, 0 = white, 1 = black
         self.won_tick = -1 # -1 = no one has won yet, otherwise the tick when the game was won
 
+        self.showing_rules = False  
+        self.rules_button = Button(screen, None, "Rules", 32, self.on_rules_click)
+        bounds = self.rules_button.get_bounds()
+        self.rules_button.set_pos((SCREEN_WIDTH - bounds[0] - 10, 10))
+        self.elements.append(self.rules_button)
+
     def draw_screen(self):
 
         self.screen.blit(dh.bg, (0, 0))
@@ -43,12 +50,25 @@ class GameMenu(Menu):
 
         self.tick += 1
         super().draw_screen()
+
+        if self.showing_rules:
+            dh.draw_rules_overlay(self.screen, 1)
     
     #def handle_mouse_input(self, mouse_x, mouse_y):
     #    return super().handle_mouse_input(mouse_x, mouse_y)
-        
+    
+    def on_rules_click(self):
+        self.showing_rules = not self.showing_rules
 
     def handle_mouse_input(self, mouse_x, mouse_y):
+
+        for element in self.elements:
+            pos = element.get_pos()
+            bounds = element.get_bounds()
+
+            if pos[0] <= mouse_x <= pos[0] + bounds[0] and pos[1] <= mouse_y <= pos[1] + bounds[1]:
+                element.click()
+                return
 
         board_x = SCREEN_WIDTH / 2 - (dh.PIECE_WIDTH * 8) / 2
         board_y = 4  # upper edge
@@ -106,16 +126,11 @@ class GameMenu(Menu):
                     if mouse_x >= x and mouse_x <= x + PIECE_WIDTH and mouse_y >= y and mouse_y <= y + PIECE_HEIGHT:
                         self.selected_row = insert_move
                         self.complete_move()
-                        print(insert_move)
                 return
             elif (-1, -1) in filtered_possible_moves:
                 field = (-1, -1)
             else:
                 return
-
-        
-
-        
 
         stack = self.visual_board[field[0]][field[1]]
 
@@ -133,8 +148,6 @@ class GameMenu(Menu):
                 self.set_move(self.selected_field, field, 1)
             elif move_state == 1:
                 self.set_move(self.selected_field, field, 2)
-
-        
 
         
     def stack_top_matches_player(self, stack, current_player):
@@ -343,11 +356,22 @@ class GameMenu(Menu):
         
 
     def get_field_color(self, pos, filtered_possible_moves): 
-        if (self.first_move is not None and pos in self.first_move) or (self.second_move is not None and pos in self.second_move):
-            return FOREGROUND_ACCENT_1
         if self.selected_field == pos:
             return SELECTED_COLOR
         elif pos in filtered_possible_moves:
             return MOVE_COLOR
+        elif (self.first_move is not None and pos in self.first_move) or (self.second_move is not None and pos in self.second_move):
+            return FOREGROUND_ACCENT_1
         else:
             return FOREGROUND
+        
+    def cancel_selection(self):
+        if(self.selected_field is not None):
+            self.selected_field = None
+
+    def handle_key_input(self, key):
+        if key == pygame.K_ESCAPE:
+            if self.get_move_state() == 0 or self.get_move_state() == 1:
+                self.cancel_selection()
+            if self.showing_rules:
+                self.showing_rules = False

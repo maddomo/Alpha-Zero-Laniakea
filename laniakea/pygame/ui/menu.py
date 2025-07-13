@@ -20,3 +20,6 @@ class Menu:
 
             if mouse_x >= pos[0] and mouse_x <= pos[0] + bounds[0] and mouse_y >= pos[1] and mouse_y <= pos[1] + bounds[1]:
                 element.click()
+
+    def handle_key_input(self, key):
+        pass

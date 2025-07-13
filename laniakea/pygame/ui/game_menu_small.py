@@ -6,6 +6,7 @@ from .. import drawhelper as dh
 from laniakeaSmallMap.LaniakeaLogic import Board
 import pygame
 import copy
+from .elements.button import Button
 
 ROWS = 5
 COLS = 6
@@ -29,6 +30,12 @@ class GameMenuSmall(Menu):
         self.won_tick = -1 # -1 = no one has won yet, otherwise the tick when the game was won
         self.upper_board_edge = (SCREEN_HEIGHT - BOARD_HEIGHT_SMALL - (PIECE_WIDTH * 4)) / 2 + 30
 
+        self.showing_rules = False  
+        self.rules_button = Button(screen, None, "Rules", 32, self.on_rules_click)
+        bounds = self.rules_button.get_bounds()
+        self.rules_button.set_pos((SCREEN_WIDTH - bounds[0] - 10, 10))
+        self.elements.append(self.rules_button)
+
     def draw_screen(self):
 
         self.screen.blit(dh.bg, (0, 0))
@@ -43,12 +50,25 @@ class GameMenuSmall(Menu):
 
         self.tick += 1
         super().draw_screen()
+
+        if self.showing_rules:
+            dh.draw_rules_overlay(self.screen, 2)
     
     #def handle_mouse_input(self, mouse_x, mouse_y):
     #    return super().handle_mouse_input(mouse_x, mouse_y)
-        
+
+    def on_rules_click(self):
+        self.showing_rules = not self.showing_rules 
 
     def handle_mouse_input(self, mouse_x, mouse_y):
+
+        for element in self.elements:
+            pos = element.get_pos()
+            bounds = element.get_bounds()
+
+            if pos[0] <= mouse_x <= pos[0] + bounds[0] and pos[1] <= mouse_y <= pos[1] + bounds[1]:
+                element.click()
+                return
 
         board_x = SCREEN_WIDTH / 2 - (dh.PIECE_WIDTH * COLS_SMALL) / 2
         board_y = self.upper_board_edge  # upper edge
@@ -289,15 +309,21 @@ class GameMenuSmall(Menu):
                 dh.draw_arrow(self.screen, (x, y), not num // ROWS_SMALL)
             pass
 
-
-        
-
     def get_field_color(self, pos, filtered_possible_moves): 
-        if (self.first_move is not None and pos in self.first_move):
-            return FOREGROUND_ACCENT_1
         if self.selected_field == pos:
             return SELECTED_COLOR
         elif pos in filtered_possible_moves:
             return MOVE_COLOR
+        elif (self.first_move is not None and pos in self.first_move):
+            return FOREGROUND_ACCENT_1
         else:
             return FOREGROUND
+        
+    def cancel_selection(self):
+        if(self.selected_field is not None):
+            self.selected_field = None
+
+    def handle_key_input(self, key):
+        if key == pygame.K_ESCAPE:
+            if self.get_move_state() == 0:
+                self.cancel_selection()
